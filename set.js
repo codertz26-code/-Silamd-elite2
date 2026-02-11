@@ -4,9 +4,64 @@ if (fs.existsSync('set.env'))
     require('dotenv').config({ path: __dirname + '/set.env' });
 const path = require("path");
 const databasePath = path.join(__dirname, './database.db');
+// Load feature flags from features.json for runtime toggles
+const FEATURES_FILE = path.join(__dirname, 'features.json');
+let FEATURES = {};
+if (fs.existsSync(FEATURES_FILE)) {
+    try {
+        FEATURES = JSON.parse(fs.readFileSync(FEATURES_FILE));
+    }
+    catch (e) {
+        console.error('Failed to parse features.json', e);
+        FEATURES = {};
+    }
+}
 const DATABASE_URL = process.env.DATABASE_URL === undefined
     ? databasePath
     : process.env.DATABASE_URL;
+// List of image URLs
+const njabulox = [
+    "https://files.catbox.moe/krnlo3.jpeg",
+    "https://files.catbox.moe/36vahk.png",
+    "https://files.catbox.moe/j7kue0.jpeg",
+    "https://files.catbox.moe/edcfwx.jpeg",
+    "https://files.catbox.moe/98k75b.jpeg" // New image added
+];
+
+// Select a random image file
+const randomNjabulourl = () => njabulox[Math.floor(Math.random() * njabulox.length)];
+
+// Helper to send alive audio with contextual externalAdReply thumbnail
+async function sendAliveAudio(zk, dest, AUDIO_URL, runtime) {
+    if (!zk || !dest || !AUDIO_URL) return;
+    try {
+        await zk.sendMessage(dest, {
+            audio: { url: AUDIO_URL },
+            mimetype: 'audio/mp4',
+            ptt: true,
+            contextInfo: {
+                isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                    newsletterJid: '120363402325089913@newsletter',
+                    newsletterName: "➤®𝐒𝐈𝐋𝐀-𝐌𝐃",
+                    serverMessageId: 143,
+                },
+                forwardingScore: 999,
+                externalAdReply: {
+                    title: `⏰ message am alive  ${runtime}`,
+                    mediaType: 1,
+                    previewType: 0,
+                    thumbnailUrl: randomNjabulourl(),
+                    renderLargerThumbnail: true,
+                }
+            }
+        });
+    }
+    catch (e) {
+        console.error('sendAliveAudio error', e);
+    }
+}
+
 module.exports = { session: process.env.SESSION_ID || 'zokk',
 
     //process.env.PREFIX//
@@ -65,6 +120,10 @@ module.exports = { session: process.env.SESSION_ID || 'zokk',
     
     //process.env.ANTI_DELETE_MESSAGE//             
     ADM : process.env.ANTI_DELETE_MESSAGE || 'no',
+    // Loaded feature flags
+    FEATURES,
+    // Helper to send alive audio
+    sendAliveAudio,
     DATABASE_URL,
     DATABASE: DATABASE_URL === databasePath
         ? "postgresql://postgres:bKlIqoOUWFIHOAhKxRWQtGfKfhGKgmRX@viaduct.proxy.rlwy.net:47738/railway" : "postgresql://postgres:bKlIqoOUWFIHOAhKxRWQtGfKfhGKgmRX@viaduct.proxy.rlwy.net:47738/railway",
@@ -77,6 +136,21 @@ fs.watchFile(fichier, () => {
     delete require.cache[fichier];
     require(fichier);
 })
+
+// Watch features.json and reload FEATURES when it changes
+if (fs.existsSync(FEATURES_FILE)) {
+    fs.watchFile(FEATURES_FILE, () => {
+        try {
+            const fresh = JSON.parse(fs.readFileSync(FEATURES_FILE));
+            FEATURES = fresh;
+            if (module && module.exports) module.exports.FEATURES = FEATURES;
+            console.log('features.json reloaded');
+        }
+        catch (e) {
+            console.error('Failed to reload features.json', e);
+        }
+    });
+}
 
 
 

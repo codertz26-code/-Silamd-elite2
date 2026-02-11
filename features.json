@@ -1,0 +1,11 @@
+{
+  "AUTO_READ_STATUS": "yes",
+  "AUTO_BIO": "yes",
+  "AUTOREACT_STATUS": "yes",
+  "AUTO_DOWNLOAD_STATUS": "no",
+  "MODE": "yes",
+  "PM_PERMIT": "yes",
+  "CHATBOT": "no",
+  "DP": "yes",
+  "ADM": "no"
+}
