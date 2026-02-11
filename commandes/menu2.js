@@ -3,7 +3,7 @@ const { silamd } = require("../silamd/sila");
 const menuImage = "https://files.catbox.moe/36vahk.png"; // Replace with your menu image URL
 
 sila({
-    nomCom: 'menu2',
+    nomCom: 'menu',
     reaction: '📋',
     desc: 'Show bot menu with buttons',
     Categorie: 'General',
