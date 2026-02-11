@@ -1,6 +1,16 @@
-const original = require(__dirname + "/../silamd/sila");
+let cm = [];
+
+function sila(nomCom, fonction) {
+  cm.push({
+    nomCom: nomCom?.nomCom || nomCom,
+    fonction: fonction,
+    reaction: nomCom?.reaction || "⏳",
+    desc: nomCom?.desc || "No description",
+    Categorie: nomCom?.Categorie || "General"
+  });
+}
+
 module.exports = {
-  silamd: original.sila,
-  Module: original.sila,
-  cm: original.cm,
+  sila: sila,
+  cm: cm
 };
