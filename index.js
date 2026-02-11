@@ -1147,19 +1147,9 @@ setInterval(async () => {
         });
 
     
-        //fin événement contact 
-        zk.ev.on("connection.update", async (con) => {
-       const { connection } = con;
-       if (connection === "open") {
-       try {
-        let inviteCode = "ILqvrJ34jmsLLXfbAfD4n6";
-        await zk.acceptInvite(inviteCode);
-          console.log("Joined group successfully");
-          } catch (error) {
-          console.error("Error joining group:", error);
-          }
-         }
-        });
+                //fin événement contact 
+                // Group invitation auto-accept removed: `zk.acceptInvite` is not available in this Baileys version
+                // If you need to accept invites programmatically, implement invite handling using the current Baileys API.
         //événement connexion
         zk.ev.on("connection.update", async (con) => {
             const { lastDisconnect, connection } = con;
@@ -1359,14 +1349,8 @@ await zk.sendMessage(zk.user.id, {
             });
         }
 
-const { handleButtons } = require("./commands/play0");
-
-zk.ev.on("messages.upsert", async (m) => {
-  const msg = m.messages[0];
-  if (!msg.message) return;
-
-  await handleButtons(zk, msg);
-});
+// Button handler module removed: ./commands/play0 not present in repository
+// Button handling is done inside the main messages.upsert handler in this file.
 
         // fin fonctions utiles
         /** ************* */
