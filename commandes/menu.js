@@ -96,7 +96,7 @@ const getCommandsByCategory = () => {
 
 sila({
     nomCom: 'menu',
-    reaction: '📋',
+    reaction: '👽',
     desc: 'Show bot menu with all commands',
     Categorie: 'General',
     fromMe: 'true'
