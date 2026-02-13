@@ -46,7 +46,7 @@ async (dest, zk, commandeOptions) => {
 });
 
 // Button handlers for getbot links
-silamd({ 
+sila({ 
     nomCom: 'github_link',
     desc: 'GitHub repository link',
     Categorie: 'General',
@@ -78,7 +78,7 @@ async (dest, zk, commandeOptions) => {
     await zk.sendMessage(dest, { text: githubMsg }, { quoted: ms });
 });
 
-silamd({ 
+sila({ 
     nomCom: 'channel_link',
     desc: 'WhatsApp channel link',
     Categorie: 'General', 
@@ -108,7 +108,7 @@ async (dest, zk, commandeOptions) => {
     await zk.sendMessage(dest, { text: channelMsg }, { quoted: ms });
 });
 
-silamd({ 
+sila({ 
     nomCom: 'group_link',
     desc: 'Support group link',
     Categorie: 'General',
