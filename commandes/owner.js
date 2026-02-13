@@ -1,7 +1,7 @@
 const { silamd } = require("../silamd/sila");
 const moment = require("moment-timezone");
 
-silamd({ 
+sila({ 
     nomCom: 'owner',
     desc: 'Show bot owner information',
     Categorie: 'General',
