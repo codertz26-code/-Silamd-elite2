@@ -1,4 +1,4 @@
-const { silamd } = require("../../silamd/sila");
+const { silamd } = require("../silamd/sila");
 const fs = require('fs');
 const path = require('path');
 
@@ -51,3 +51,4 @@ async (dest, zk, commandeOptions) => {
         repondre("❌ 𝙰𝚕𝚕 𝚍𝚘𝚠𝚗𝚕𝚘𝚊𝚍 𝚊𝚙𝚒𝚜 𝚏𝚊𝚒𝚕𝚎𝚍\n𝚃𝚛𝚢 𝚊𝚐𝚊𝚒𝚗 𝚕𝚊𝚝𝚎𝚛 𝚘𝚛 𝚌𝚘𝚗𝚝𝚊𝚌𝚝 𝚊𝚍𝚖𝚒𝚗");
     }
 });
+
