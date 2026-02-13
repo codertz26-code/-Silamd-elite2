@@ -35,7 +35,7 @@ const getContextInfo = (m) => {
 // ============================================
 sila({
     nomCom: 'song',
-    alias: ['mp3', 'music'],
+    alias: ['mp3', 'play'],
     reaction: '🎵',
     desc: 'Download song with cover art',
     Categorie: 'download',
