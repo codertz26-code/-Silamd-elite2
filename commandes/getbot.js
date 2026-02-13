@@ -1,6 +1,6 @@
 const { silamd } = require("../silamd/sila");
 
-silamd({ 
+sila({ 
     nomCom: 'getbot',
     desc: 'Get bot links and information',
     Categorie: 'General',
