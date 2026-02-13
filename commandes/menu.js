@@ -4,8 +4,9 @@ const path = require('path');
 const moment = require("moment-timezone");
 
 const menuImage = "https://files.catbox.moe/36vahk.png";
+const CHANNEL_LINK = "https://whatsapp.com/channel/0029VbBG4gfISTkCpKxyMH02";
 
-// Define fakevCard kama ilivyo kwenye song command
+// Define fakevCard iliyorahisishwa - without vcard na contactmessage
 const fakevCard = {
   key: {
     fromMe: false,
@@ -13,25 +14,8 @@ const fakevCard = {
     remoteJid: "status@broadcast"
   },
   message: {
-    contactMessage: {
-      displayName: "© 𝐒𝐈𝐋𝐀-𝐌𝐃",
-      vcard: `BEGIN:VCARD\nVERSION:3.0\nFN:𝐒𝐈𝐋𝐀 𝐌𝐃 𝐁𝐎𝐓\nORG:𝐒𝐈𝐋𝐀-𝐌𝐃;\nTEL;type=CELL;type=VOICE;waid=255789661031:+255789661031\nEND:VCARD`
-    }
+    // empty message - just for quoting
   }
-};
-
-// Context Info kama ile ya song command
-const getContextInfo = (m) => {
-    return {
-        mentionedJid: [m.sender],
-        forwardingScore: 999,
-        isForwarded: true,
-        forwardedNewsletterMessageInfo: {
-            newsletterJid: '120363402325089913@newsletter',
-            newsletterName: '© 𝐒𝐈𝐋𝐀 𝐌𝐃',
-            serverMessageId: 143,
-        },
-    };
 };
 
 // Get all commands from folder automatically
@@ -96,7 +80,7 @@ const getCommandsByCategory = () => {
 
 sila({
     nomCom: 'menu',
-    reaction: '👽',
+    reaction: '📋',
     desc: 'Show bot menu with all commands',
     Categorie: 'General',
     fromMe: 'true'
@@ -110,11 +94,11 @@ try{
     const categories = getCommandsByCategory();
     const categoryNames = Object.keys(categories);
 
-    // Create buttons
+    // Create buttons (tatu: Get Bot, Owner, na Channel)
     const commandButtons = [
         { buttonId: `${prefixe}getbot`, buttonText: { displayText: "🤖 Get Bot" }, type: 1 },
         { buttonId: `${prefixe}owner`, buttonText: { displayText: "👨‍💼 Owner" }, type: 1 },
-        { buttonId: `${prefixe}ping`, buttonText: { displayText: "📊 Ping" }, type: 1 }
+        { buttonId: CHANNEL_LINK, buttonText: { displayText: "📢 Channel" }, type: 1 }
     ];
 
     // Generate commands list with nice formatting
@@ -149,12 +133,7 @@ try{
 
 ${commandsText}
 
-┏━❑ 𝐐𝐔𝐈𝐂𝐊 𝐀𝐂𝐂𝐄𝐒𝐒 ━━━━━━━━━
-┃ ✦ Use *${prefixe}* before commands
-┃ ✦ Example: *${prefixe}alive*
-┃ ✦ Example: *${prefixe}song shape of you*
-┗━━━━━━━━━━━━━━━━━━━━
-
+━━━━━━━━━━━━━━━━━━━━
 > © 𝐏𝐨𝐰𝐞𝐫𝐞𝐝 𝐛𝐲 𝐒𝐢𝐥𝐚 𝐓𝐞𝐜𝐡`,
         footer: "𝐒𝐈𝐋𝐀-𝐌𝐃 𝐁𝐎𝐓 © 2026",
         buttons: commandButtons,
@@ -167,20 +146,11 @@ ${commandsText}
                 newsletterJid: '120363402325089913@newsletter',
                 newsletterName: '© 𝐒𝐈𝐋𝐀 𝐌𝐃',
                 serverMessageId: 143,
-            },
-            externalAdReply: {
-                title: `📋 𝐒𝐈𝐋𝐀-𝐌𝐃 𝐌𝐄𝐍𝐔 (${allCommands.length} 𝐜𝐦𝐝𝐬)`,
-                body: `𝐓𝐨𝐭𝐚𝐥 𝐂𝐨𝐦𝐦𝐚𝐧𝐝𝐬: ${allCommands.length}`,
-                mediaType: 1,
-                previewType: 0,
-                thumbnailUrl: menuImage,
-                sourceUrl: 'https://github.com/',
-                renderLargerThumbnail: true,
             }
         }
     };
 
-    // Send menu with style kama ya song
+    // Send menu
     await zk.sendMessage(dest, buttonMessage, { quoted: fakevCard });
 
 } catch (e) {
