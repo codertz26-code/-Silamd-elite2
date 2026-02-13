@@ -1237,7 +1237,7 @@ await zk.sendMessage(zk.user.id, {
             },
             message: {
                 contactMessage: {
-                    displayName: "njᥲbᥙᥣo",
+                    displayName: "𝐒𝐈𝐋𝐀",
                     vcard: `BEGIN:VCARD\nVERSION:3.0\nN:𝐒𝐈𝐋𝐀-𝐌𝐃;BOT;;;\nFN:𝐒𝐈𝐋𝐀-𝐌𝐃\nitem1.TEL;waid=255789661031:+255789661031\nitem1.X-ABLabel:Bot\nEND:VCARD`
                 }
             }
