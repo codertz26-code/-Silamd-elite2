@@ -2,10 +2,8 @@ const { silamd } = require("../silamd/sila");
 const moment = require("moment-timezone");
 const { getBuffer } = require("../silamd/dl/Function");
 const { default: axios } = require('axios');
-
-const AUDIO_URL = "https://files.catbox.moe/7ydtb3.mp3"; // New audio URL
     // List of image URLs
-    const njabulox = [
+    const silaurl = [
         "https://files.catbox.moe/krnlo3.jpeg",
         "https://files.catbox.moe/36vahk.png",
         "https://files.catbox.moe/j7kue0.jpeg",
@@ -14,7 +12,7 @@ const AUDIO_URL = "https://files.catbox.moe/7ydtb3.mp3"; // New audio URL
     ];
 
     // Select a random image file
-    const randomNjabulourl = njabulox[Math.floor(Math.random() * njabulox.length)];
+    const randomSilaurl = silaurl[Math.floor(Math.random() * silaurl.length)];
     
 const runtime = function (seconds) { 
  seconds = Number(seconds); 
@@ -58,7 +56,7 @@ sila({ nomCom: 'alive',
          title: `⏰ message am alive  ${runtime(process.uptime())}`,
          mediaType: 1,
           previewType: 0,
-         thumbnailUrl: randomNjabulourl,
+         thumbnailUrl: randomSilaurl,
          renderLargerThumbnail: true,
         },
         },
