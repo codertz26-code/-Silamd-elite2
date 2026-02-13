@@ -18,9 +18,9 @@ sila({
     nomCom: 'restart',
     alias: ['reboot', 'refresh'],
     reaction: '🔄',
-    desc: 'Restart bot',
+    desc: 'Restart bot (Owner Only)',
     Categorie: 'Owner',
-    fromMe: 'true'  // Only owner can use this command
+    ownerOnly: true  // Hii inamake command iwe ya owner pekee
 },
 async(dest, zk, commandeOptions) => {
 try{
