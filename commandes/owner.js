@@ -1,64 +1,46 @@
 const { silamd } = require("../silamd/sila");
+const moment = require("moment-timezone");
 
-const ownerImage = "https://files.catbox.moe/krnlo3.jpeg"; // Replace with owner image URL
-const ownerNumber = "255789661031";
-
-sila({
+silamd({ 
     nomCom: 'owner',
-    alias: ['creator', 'admin'],
-    reaction: '👨‍💼',
-    desc: 'Contact bot owner',
+    desc: 'Show bot owner information',
     Categorie: 'General',
-    fromMe: 'true'
+    reaction: '👑', 
+    fromMe: 'true',
 },
-async(dest, zk, commandeOptions) => {
-try{
+async (dest, zk, commandeOptions) => {
     const { ms, repondre } = commandeOptions;
-    
-    const buttons = [
-        { 
-            buttonId: "id_chat", 
-            buttonText: { displayText: "💬 Chat with Owner" }, 
-            type: 1 
-        },
-        { 
-            buttonId: "id_call", 
-            buttonText: { displayText: "📞 Call Owner" }, 
-            type: 1 
-        },
-        { 
-            buttonId: "id_close", 
-            buttonText: { displayText: "❌ Close" }, 
-            type: 1 
+
+    const ownerInfo = `╭─❏ *👑 OWNER INFO* ❏─╮
+│
+│  *Name*: SILA TECH
+│  *Number*: wa.me/255789661031
+│  *Role*: Bot Creator & Developer
+│  *Country*: Tanzania 🇹🇿
+│
+│  *About*:
+│  >> Expert in WhatsApp Bots
+│  >> JavaScript Developer
+│  >> Tech Enthusiast
+│
+╰────────────────────╯
+
+💬 *Feel free to contact me for:*
+• Bot development
+• Technical support
+• Collaboration
+• Questions`;
+
+    await zk.sendMessage(dest, { 
+        text: ownerInfo,
+        contextInfo: {
+            externalAdReply: {
+                title: "👑 BOT OWNER",
+                body: "SILA TECH",
+                mediaType: 1,
+                thumbnailUrl: "https://files.catbox.moe/krnlo3.jpeg",
+                renderLargerThumbnail: true,
+            }
         }
-    ];
-
-    const buttonMessage = {
-        image: { url: ownerImage },
-        caption: `╔════════════════════════════╗
-║   👨‍💼 𝐁𝐎𝐓 𝐎𝐖𝐍𝐄𝐑   ║
-╚════════════════════════════╝
-
-🎯 **Bot Owner Information:**
-
-📱 Phone: +${ownerNumber}
-💬 WhatsApp: wa.me/${ownerNumber}
-
-👤 Name: Sila Tech
-🏢 Organization: SILA-MD
-
-✨ For questions, suggestions, or support, contact the owner directly.
-
-> © Powered by Sila Tech`,
-        footer: "SILA-MD Bot © 2026",
-        buttons: buttons,
-        headerType: 4
-    };
-
-    await zk.sendMessage(dest, buttonMessage);
-
-} catch (e) {
-    console.log("❌ Owner Command Error: " + e);
-    repondre("❌ Error: " + e);
-}
+    }, { quoted: ms });
 });
