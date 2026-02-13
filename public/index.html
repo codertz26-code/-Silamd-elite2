@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>𝐒𝐈𝐋𝐀-𝐌𝐃 𝐁𝐎𝐓</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 600px;
+            width: 90%;
+            text-align: center;
+            color: #333;
+        }
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: bold;
+        }
+        .status-card {
+            background: #f7f7f7;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 5px solid #4CAF50;
+        }
+        .status {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 50px;
+            background: #4CAF50;
+            color: white;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 25px 0;
+        }
+        .info-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .info-item h3 {
+            color: #667eea;
+            margin-bottom: 5px;
+            font-size: 1em;
+        }
+        .info-item p {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+        }
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            color: #666;
+        }
+        .animation {
+            width: 100px;
+            height: 100px;
+            margin: 20px auto;
+            position: relative;
+        }
+        .pulse {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.7);
+            }
+            70% {
+                transform: scale(1);
+                box-shadow: 0 0 0 20px rgba(102, 126, 234, 0);
+            }
+            100% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(102, 126, 234, 0);
+            }
+        }
+        .features {
+            text-align: left;
+            margin: 20px 0;
+            padding: 20px;
+            background: #f7f7f7;
+            border-radius: 15px;
+        }
+        .features h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        .features ul {
+            list-style: none;
+        }
+        .features li {
+            padding: 8px 0;
+            border-bottom: 1px solid #ddd;
+        }
+        .features li:before {
+            content: "✓ ";
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        .bot-name {
+            font-family: monospace;
+            font-size: 1.2em;
+            background: #f0f0f0;
+            padding: 5px 10px;
+            border-radius: 5px;
+            display: inline-block;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="animation">
+            <div class="pulse"></div>
+        </div>
+        
+        <h1>𝐒𝐈𝐋𝐀-𝐌𝐃 𝐁𝐎𝐓</h1>
+        
+        <div class="status-card">
+            <div class="status">🟢 𝐁𝐎𝐓 𝐈𝐒 𝐑𝐔𝐍𝐍𝐈𝐍𝐆</div>
+            <p style="margin-top: 15px;" class="bot-name">🤖 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳</p>
+        </div>
+
+        <div class="info-grid">
+            <div class="info-item">
+                <h3>📊 𝐒𝐓𝐀𝐓𝐔𝐒</h3>
+                <p>𝐀𝐜𝐭𝐢𝐯𝐞</p>
+            </div>
+            <div class="info-item">
+                <h3>⚡ 𝐕𝐄𝐑𝐒𝐈𝐎𝐍</h3>
+                <p>𝐯𝟐.𝟎.𝟎</p>
+            </div>
+            <div class="info-item">
+                <h3>👑 𝐎𝐖𝐍𝐄𝐑</h3>
+                <p>𝐒𝐢𝐥𝐚 𝐓𝐞𝐚𝐦</p>
+            </div>
+            <div class="info-item">
+                <h3>📅 𝐔𝐏𝐓𝐈𝐌𝐄</h3>
+                <p id="uptime">𝐂𝐚𝐥𝐜𝐮𝐥𝐚𝐭𝐢𝐧𝐠...</p>
+            </div>
+        </div>
+
+        <div class="features">
+            <h3>✨ 𝐅𝐄𝐀𝐓𝐔𝐑𝐄𝐒</h3>
+            <ul>
+                <li>𝐀𝐧𝐭𝐢𝐥𝐢𝐧𝐤 𝐒𝐲𝐬𝐭𝐞𝐦</li>
+                <li>𝐀𝐧𝐭𝐢𝐝𝐞𝐥𝐞𝐭𝐞 𝐃𝐞𝐭𝐞𝐜𝐭𝐨𝐫</li>
+                <li>𝐂𝐡𝐚𝐭𝐛𝐨𝐭 𝐀𝐮𝐭𝐨-𝐑𝐞𝐩𝐥𝐲</li>
+                <li>𝐏𝐫𝐞𝐟𝐢𝐱 & 𝐍𝐨-𝐏𝐫𝐞𝐟𝐢𝐱 𝐂𝐨𝐦𝐦𝐚𝐧𝐝𝐬</li>
+                <li>𝐀𝐮𝐭𝐨-𝐒𝐭𝐚𝐭𝐮𝐬 𝐕𝐢𝐞𝐰</li>
+                <li>𝐆𝐫𝐨𝐮𝐩 𝐌𝐚𝐧𝐚𝐠𝐞𝐦𝐞𝐧𝐭</li>
+                <li>𝐌𝐞𝐝𝐢𝐚 𝐃𝐨𝐰𝐧𝐥𝐨𝐚𝐝𝐞𝐫</li>
+            </ul>
+        </div>
+
+        <div class="footer">
+            <p>© 2026 𝚂𝙸𝙻𝙰-𝙼𝙳 𝙱𝙾𝚃 | 𝙰𝚕𝚕 𝚛𝚒𝚐𝚑𝚝𝚜 𝚛𝚎𝚜𝚎𝚛𝚟𝚎𝚍</p>
+        </div>
+    </div>
+
+    <script>
+        // Uptime counter
+        const startTime = new Date();
+        
+        function updateUptime() {
+            const now = new Date();
+            const diff = Math.floor((now - startTime) / 1000);
+            
+            const days = Math.floor(diff / 86400);
+            const hours = Math.floor((diff % 86400) / 3600);
+            const minutes = Math.floor((diff % 3600) / 60);
+            const seconds = diff % 60;
+            
+            document.getElementById('uptime').innerHTML = 
+                `${days}d ${hours}h ${minutes}m ${seconds}s`;
+        }
+        
+        updateUptime();
+        setInterval(updateUptime, 1000);
+    </script>
+</body>
+</html>
