@@ -6,16 +6,17 @@ const moment = require("moment-timezone");
 const menuImage = "https://files.catbox.moe/36vahk.png";
 const CHANNEL_LINK = "https://whatsapp.com/channel/0029VbBG4gfISTkCpKxyMH02";
 
-// Define fakevCard iliyorahisishwa - without vcard na contactmessage
-const fakevCard = {
-  key: {
-    fromMe: false,
-    participant: "0@s.whatsapp.net",
-    remoteJid: "status@broadcast"
-  },
-  message: {
-    // empty message - just for quoting
-  }
+// FakevCard iliyobadilishwa kama ulivyotaka
+const fkontak = {
+    "key": {
+        "participant": '0@s.whatsapp.net',
+        "remoteJid": '0@s.whatsapp.net',
+        "fromMe": false,
+        "id": "Halo"
+    },
+    "message": {
+        "conversation": "𝚂𝙸𝙻𝙰"
+    }
 };
 
 // Get all commands from folder automatically
@@ -40,7 +41,7 @@ const getCommands = () => {
     }
 };
 
-// Group commands by category (optional - if you want categories)
+// Group commands by category
 const getCommandsByCategory = () => {
     try {
         const commandsDir = path.join(__dirname);
@@ -98,7 +99,7 @@ try{
     const commandButtons = [
         { buttonId: `${prefixe}getbot`, buttonText: { displayText: "🤖 Get Bot" }, type: 1 },
         { buttonId: `${prefixe}owner`, buttonText: { displayText: "👨‍💼 Owner" }, type: 1 },
-        { buttonId: CHANNEL_LINK, buttonText: { displayText: "📢 Channel" }, type: 1 }
+        { buttonId: CHANNEL_LINK, buttonText: { displayText: "📢 Channel" }, type: 1 } // Hii itafungua link moja kwa moja
     ];
 
     // Generate commands list with nice formatting
@@ -150,8 +151,8 @@ ${commandsText}
         }
     };
 
-    // Send menu
-    await zk.sendMessage(dest, buttonMessage, { quoted: fakevCard });
+    // Send menu with new fkontak
+    await zk.sendMessage(dest, buttonMessage, { quoted: fkontak });
 
 } catch (e) {
     console.log("❌ Menu Command Error: " + e);
