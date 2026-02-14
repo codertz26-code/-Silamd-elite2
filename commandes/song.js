@@ -44,8 +44,96 @@ const formatViews = (views) => {
     return views.toString();
 };
 
+// Download function for audio
+const downloadAudio = async (videoUrl, title, author, thumbnail) => {
+    try {
+        const fallbackApi = `https://yt-dl.officialhectormanuel.workers.dev/?url=${encodeURIComponent(videoUrl)}`;
+        const response = await axios.get(fallbackApi, { timeout: 30000 });
+        const data = response.data;
+        
+        if (data?.status && data.audio) {
+            return {
+                success: true,
+                audioUrl: data.audio,
+                title,
+                author,
+                thumbnail
+            };
+        }
+        return { success: false, error: 'No audio URL found' };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+};
+
+// Download function for audio document
+const downloadAudioDoc = async (videoUrl, title, author, thumbnail) => {
+    try {
+        const fallbackApi = `https://yt-dl.officialhectormanuel.workers.dev/?url=${encodeURIComponent(videoUrl)}`;
+        const response = await axios.get(fallbackApi, { timeout: 30000 });
+        const data = response.data;
+        
+        if (data?.status && data.audio) {
+            return {
+                success: true,
+                audioUrl: data.audio,
+                title,
+                author,
+                thumbnail
+            };
+        }
+        return { success: false, error: 'No audio URL found' };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+};
+
+// Download function for video
+const downloadVideo = async (videoUrl, title, author, thumbnail) => {
+    try {
+        const fallbackApi = `https://yt-dl.officialhectormanuel.workers.dev/?url=${encodeURIComponent(videoUrl)}`;
+        const response = await axios.get(fallbackApi, { timeout: 30000 });
+        const data = response.data;
+        
+        if (data?.status && data.video) {
+            return {
+                success: true,
+                videoUrl: data.video,
+                title,
+                author,
+                thumbnail
+            };
+        }
+        return { success: false, error: 'No video URL found' };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+};
+
+// Download function for video document
+const downloadVideoDoc = async (videoUrl, title, author, thumbnail) => {
+    try {
+        const fallbackApi = `https://yt-dl.officialhectormanuel.workers.dev/?url=${encodeURIComponent(videoUrl)}`;
+        const response = await axios.get(fallbackApi, { timeout: 30000 });
+        const data = response.data;
+        
+        if (data?.status && data.video) {
+            return {
+                success: true,
+                videoUrl: data.video,
+                title,
+                author,
+                thumbnail
+            };
+        }
+        return { success: false, error: 'No video URL found' };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+};
+
 // ============================================
-// SONG COMMAND - ILIYOBORESHWA KAMILI
+// SONG COMMAND - ILIYOSAHIHISHWA
 // ============================================
 sila({
     nomCom: 'song',
@@ -63,29 +151,19 @@ try{
     if (!q) return await repondre(`┏━❑ 𝙷𝙾𝚆 𝚃𝙾 𝚄𝚂𝙴 ━━━━━━━━━
 ┃ ✦ ${prefixe}song shape of you
 ┃ ✦ ${prefixe}song https://youtube.com/...
-┃ ✦ ${prefixe}song -v shape of you (for video)
 ┃ 
 ┃ 💡 *Aliases:* mp3, play, music, video, ytmp4, ytmp3
 ┗━━━━━━━━━━━━━━━━━━━━
 > © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`);
 
-    // Check if user wants video
-    let isVideo = false;
-    let searchQuery = q;
-    
-    if (q.startsWith('-v ') || q.startsWith('-video ')) {
-        isVideo = true;
-        searchQuery = q.replace(/^-v\s+|-video\s+/, '');
-    }
-
     // First, search for the song
     let videoData = null;
     let isDirectUrl = false;
 
-    if (searchQuery.includes('youtube.com') || searchQuery.includes('youtu.be')) {
+    if (q.includes('youtube.com') || q.includes('youtu.be')) {
         // It's a direct URL
         isDirectUrl = true;
-        const videoId = searchQuery.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/)?.[1];
+        const videoId = q.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/)?.[1];
 
         if (!videoId) {
             return await repondre(`┏━❑ 𝙴𝚁𝚁𝙾𝚁 ━━━━━━━━━
@@ -99,15 +177,15 @@ try{
     } else {
         // It's a search query
         await repondre(`┏━❑ 𝚂𝙴𝙰𝚁𝙲𝙷𝙸𝙽𝙶 ━━━━━━━━━
-┃ 🔍 *𝚂𝚎𝚊𝚛𝚌𝚑𝚒𝚗𝚐:* "${searchQuery}"
+┃ 🔍 *𝚂𝚎𝚊𝚛𝚌𝚑𝚒𝚗𝚐:* "${q}"
 ┃ ⏳ 𝙿𝚕𝚎𝚊𝚜𝚎 𝚠𝚊𝚒𝚝...
 ┗━━━━━━━━━━━━━━━━━━━━
 > © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`);
 
-        const search = await yts(searchQuery);
+        const search = await yts(q);
         if (!search || !search.all || search.all.length === 0) {
             return await repondre(`┏━❑ 𝙴𝚁𝚁𝙾𝚁 ━━━━━━━━━
-┃ ❌ 𝙽𝚘 𝚛𝚎𝚜𝚞𝚕𝚝𝚜 𝚏𝚘𝚞𝚗𝚍 𝚏𝚘𝚛 "${searchQuery}"
+┃ ❌ 𝙽𝚘 𝚛𝚎𝚜𝚞𝚕𝚝𝚜 𝚏𝚘𝚞𝚗𝚍 𝚏𝚘𝚛 "${q}"
 ┗━━━━━━━━━━━━━━━━━━━━
 > © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`);
         }
@@ -133,8 +211,32 @@ try{
     // Random thumbnail for external ad reply
     const randomThumb = getRandomThumbnail();
 
-    // Send the cover art/thumbnail with song info
-    await zk.sendMessage(dest, {
+    // Create buttons for different formats (only buttonId na displayText)
+    const buttons = [
+        { 
+            buttonId: `audioonly__${videoUrl}__${title}__${author}__${thumbnail}`, 
+            buttonText: { displayText: "🎵 𝙰𝚄𝙳𝙸𝙾 𝙾𝙽𝙻𝚈" }, 
+            type: 1 
+        },
+        { 
+            buttonId: `audiodoc__${videoUrl}__${title}__${author}__${thumbnail}`, 
+            buttonText: { displayText: "📄 𝙰𝚄𝙳𝙸𝙾 𝙳𝙾𝙲" }, 
+            type: 1 
+        },
+        { 
+            buttonId: `videoonly__${videoUrl}__${title}__${author}__${thumbnail}`, 
+            buttonText: { displayText: "🎬 𝚅𝙸𝙳𝙴𝙾 𝙾𝙽𝙻𝚈" }, 
+            type: 1 
+        },
+        { 
+            buttonId: `videodoc__${videoUrl}__${title}__${author}__${thumbnail}`, 
+            buttonText: { displayText: "📁 𝚅𝙸𝙳𝙴𝙾 𝙳𝙾𝙲" }, 
+            type: 1 
+        }
+    ];
+
+    // Send ONE message with image, info, and buttons together
+    const buttonMessage = {
         image: { url: thumbnail },
         caption: `┏━❑ 𝚂𝙾𝙽𝙶 𝙸𝙽𝙵𝙾 ━━━━━━━━━
 ┃ 🎵 *𝚃𝚒𝚝𝚕𝚎:* ${title}
@@ -144,17 +246,13 @@ try{
 ┃ 📅 *𝚄𝚙𝚕𝚘𝚊𝚍𝚎𝚍:* ${uploaded}
 ┃ 🔗 *𝚄𝚁𝙻:* ${videoUrl}
 ┗━━━━━━━━━━━━━━━━━━━━
-⏳ 𝙳𝚘𝚠𝚗𝚕𝚘𝚊𝚍𝚒𝚗𝚐 ${isVideo ? '𝚅𝙸𝙳𝙴𝙾' : '𝙰𝚄𝙳𝙸𝙾'}...
+
+📋 *𝙲𝚑𝚘𝚘𝚜𝚎 𝚏𝚘𝚛𝚖𝚊𝚝 𝚋𝚎𝚕𝚘𝚠:*
 > © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`,
+        footer: "𝚂𝙸𝙻𝙰-𝙼𝙳 𝙱𝙾𝚃 © 2026",
+        buttons: buttons,
+        headerType: 4,
         contextInfo: {
-            mentionedJid: [nomAuteurMessage],
-            forwardingScore: 999,
-            isForwarded: true,
-            forwardedNewsletterMessageInfo: {
-                newsletterJid: '120363402325089913@newsletter',
-                newsletterName: '© 𝚂𝙸𝙻𝙰 𝙼𝙳',
-                serverMessageId: 143,
-            },
             externalAdReply: {
                 title: `🎵 ${title.substring(0, 30)}${title.length > 30 ? '...' : ''}`,
                 body: `👤 ${author} | ⏱️ ${duration}`,
@@ -165,174 +263,9 @@ try{
                 renderLargerThumbnail: false,
             }
         }
-    }, { quoted: fkontak });
+    };
 
-    try {
-        // Create buttons for different formats
-        const buttons = [
-            { 
-                buttonId: `${prefixe}song audioonly ${videoUrl}`, 
-                buttonText: { displayText: "🎵 𝙰𝚄𝙳𝙸𝙾 𝙾𝙽𝙻𝚈" }, 
-                type: 1 
-            },
-            { 
-                buttonId: `${prefixe}song audiodoc ${videoUrl}`, 
-                buttonText: { displayText: "📄 𝙰𝚄𝙳𝙸𝙾 𝙳𝙾𝙲" }, 
-                type: 1 
-            },
-            { 
-                buttonId: `${prefixe}song videoonly ${videoUrl}`, 
-                buttonText: { displayText: "🎬 𝚅𝙸𝙳𝙴𝙾 𝙾𝙽𝙻𝚈" }, 
-                type: 1 
-            },
-            { 
-                buttonId: `${prefixe}song videodoc ${videoUrl}`, 
-                buttonText: { displayText: "📁 𝚅𝙸𝙳𝙴𝙾 𝙳𝙾𝙲" }, 
-                type: 1 
-            }
-        ];
-
-        const buttonMessage = {
-            text: `┏━❑ 𝙲𝙷𝙾𝙾𝚂𝙴 𝙵𝙾𝚁𝙼𝙰𝚃 ━━━━━━━━━
-┃ 🎵 *${title}*
-┃ 
-┃ 📋 *𝙰𝚟𝚊𝚒𝚕𝚊𝚋𝚕𝚎 𝚏𝚘𝚛𝚖𝚊𝚝𝚜:*
-┃ 
-┃ 🎵 𝙰𝚞𝚍𝚒𝚘 𝙾𝚗𝚕𝚢 - 𝙵𝚘𝚛 𝚕𝚒𝚜𝚝𝚎𝚗𝚒𝚗𝚐
-┃ 📄 𝙰𝚞𝚍𝚒𝚘 𝙳𝚘𝚌 - 𝙵𝚘𝚛 𝚜𝚊𝚟𝚒𝚗𝚐
-┃ 🎬 𝚅𝚒𝚍𝚎𝚘 𝙾𝚗𝚕𝚢 - 𝙵𝚘𝚛 𝚠𝚊𝚝𝚌𝚑𝚒𝚗𝚐
-┃ 📁 𝚅𝚒𝚍𝚎𝚘 𝙳𝚘𝚌 - 𝙵𝚘𝚛 𝚍𝚘𝚠𝚗𝚕𝚘𝚊𝚍
-┗━━━━━━━━━━━━━━━━━━━━
-
-𝙲𝚕𝚒𝚌𝚔 𝚊 𝚋𝚞𝚝𝚝𝚘𝚗 𝚝𝚘 𝚍𝚘𝚠𝚗𝚕𝚘𝚊𝚍:
-> © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`,
-            footer: "𝚂𝙸𝙻𝙰-𝙼𝙳 𝙱𝙾𝚃 © 2026",
-            buttons: buttons,
-            headerType: 1,
-            contextInfo: {
-                mentionedJid: [nomAuteurMessage],
-                forwardingScore: 999,
-                isForwarded: true,
-                forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363402325089913@newsletter',
-                    newsletterName: '© 𝚂𝙸𝙻𝙰 𝙼𝙳',
-                    serverMessageId: 143,
-                },
-                externalAdReply: {
-                    title: `📋 𝙲𝚑𝚘𝚘𝚜𝚎 𝙵𝚘𝚛𝚖𝚊𝚝`,
-                    body: title.substring(0, 40),
-                    mediaType: 1,
-                    previewType: 0,
-                    thumbnailUrl: randomThumb,
-                    sourceUrl: videoUrl,
-                    renderLargerThumbnail: false,
-                }
-            }
-        };
-
-        await zk.sendMessage(dest, buttonMessage, { quoted: fkontak });
-
-        // Try to download based on format
-        const fallbackApi = `https://yt-dl.officialhectormanuel.workers.dev/?url=${encodeURIComponent(videoUrl)}`;
-        const fallbackResponse = await axios.get(fallbackApi, { timeout: 30000 });
-        const fallbackData = fallbackResponse.data;
-
-        if (fallbackData?.status) {
-            // Audio download
-            if (fallbackData.audio) {
-                // Audio Only (listening)
-                await zk.sendMessage(dest, {
-                    audio: { url: fallbackData.audio },
-                    mimetype: "audio/mpeg",
-                    fileName: `${title.substring(0, 50).replace(/[^\w\s]/gi, '')}.mp3`,
-                    contextInfo: {
-                        externalAdReply: {
-                            title: `🎵 ${title.substring(0, 30)}`,
-                            body: `👤 ${author}`,
-                            mediaType: 1,
-                            previewType: 0,
-                            thumbnailUrl: thumbnail,
-                            sourceUrl: videoUrl,
-                            renderLargerThumbnail: false,
-                        }
-                    }
-                }, { quoted: fkontak });
-
-                // Audio Document (saving)
-                await zk.sendMessage(dest, {
-                    document: { url: fallbackData.audio },
-                    mimetype: "audio/mpeg",
-                    fileName: `${title.substring(0, 50).replace(/[^\w\s]/gi, '')}.mp3`,
-                    contextInfo: {
-                        externalAdReply: {
-                            title: `📄 ${title.substring(0, 30)}`,
-                            body: `👤 ${author}`,
-                            mediaType: 1,
-                            previewType: 0,
-                            thumbnailUrl: thumbnail,
-                            sourceUrl: videoUrl,
-                            renderLargerThumbnail: false,
-                        }
-                    }
-                }, { quoted: fkontak });
-            }
-
-            // Video download
-            if (fallbackData.video) {
-                // Video Only (watching)
-                await zk.sendMessage(dest, {
-                    video: { url: fallbackData.video },
-                    mimetype: "video/mp4",
-                    caption: `┏━❑ 𝚅𝙸𝙳𝙴𝙾 𝙳𝙾𝚆𝙽𝙻𝙾𝙰𝙳𝙴𝙳 ━━━━━━━━━
-┃ 🎬 *${title}*
-┃ ⏱️ *𝙳𝚞𝚛𝚊𝚝𝚒𝚘𝚗:* ${duration}
-┗━━━━━━━━━━━━━━━━━━━━
-> © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`,
-                    contextInfo: {
-                        externalAdReply: {
-                            title: `🎬 ${title.substring(0, 30)}`,
-                            body: `👤 ${author} | ⏱️ ${duration}`,
-                            mediaType: 1,
-                            previewType: 0,
-                            thumbnailUrl: thumbnail,
-                            sourceUrl: videoUrl,
-                            renderLargerThumbnail: false,
-                        }
-                    }
-                }, { quoted: fkontak });
-
-                // Video Document (downloading)
-                await zk.sendMessage(dest, {
-                    document: { url: fallbackData.video },
-                    mimetype: "video/mp4",
-                    fileName: `${title.substring(0, 50).replace(/[^\w\s]/gi, '')}.mp4`,
-                    caption: `┏━❑ 𝚅𝙸𝙳𝙴𝙾 𝙳𝙾𝙲𝚄𝙼𝙴𝙽𝚃 ━━━━━━━━━
-┃ 📁 *${title}*
-┗━━━━━━━━━━━━━━━━━━━━
-> © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`,
-                    contextInfo: {
-                        externalAdReply: {
-                            title: `📁 ${title.substring(0, 30)}`,
-                            body: `👤 ${author}`,
-                            mediaType: 1,
-                            previewType: 0,
-                            thumbnailUrl: thumbnail,
-                            sourceUrl: videoUrl,
-                            renderLargerThumbnail: false,
-                        }
-                    }
-                }, { quoted: fkontak });
-            }
-        }
-
-    } catch (error) {
-        console.error('Download error:', error.message);
-        await repondre(`┏━❑ 𝙴𝚁𝚁𝙾𝚁 ━━━━━━━━━
-┃ ❌ 𝙵𝚊𝚒𝚕𝚎𝚍 𝚝𝚘 𝚍𝚘𝚠𝚗𝚕𝚘𝚊𝚍
-┃ 📋 ${error.message}
-┗━━━━━━━━━━━━━━━━━━━━
-> © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`);
-    }
+    await zk.sendMessage(dest, buttonMessage, { quoted: fkontak });
 
 } catch (e) {
     console.log("❌ Song Command Error: " + e);
