@@ -427,60 +427,83 @@ setTimeout(() => {
                 mybotpic
             };
 
-            // ============================================
-            // 📌 ANTI-DELETE MESSAGE (Inakuja kwa owner)
-            // ============================================
-            if(ms.message.protocolMessage && ms.message.protocolMessage.type === 0 && (conf.ADM).toLocaleLowerCase() === 'yes') {
-                if(ms.key.fromMe || ms.message.protocolMessage.key.fromMe) { 
-                    console.log('Message supprimer me concernant'); 
-                    return; 
-                }
 
-                console.log('Message supprimer');
-                let key = ms.message.protocolMessage.key;
+// ============================================
+// 📌 ANTI-DELETE MESSAGE (Inatumia database)
+// ============================================
+try {
+    // Load antidelete settings
+    const antideleteSettings = (() => {
+        try {
+            const data = fs.readFileSync('./database/antidelete.json', 'utf8');
+            return JSON.parse(data);
+        } catch {
+            return { global: { enabled: conf.ADM?.toLowerCase() === 'yes' } };
+        }
+    })();
 
-                try {
-                    let st = './store.json';
-                    const data = fs.readFileSync(st, 'utf8');
-                    const jsonData = JSON.parse(data);
-                    let message = jsonData.messages[key.remoteJid];
-                    let msg;
+    if(ms.message.protocolMessage && ms.message.protocolMessage.type === 0 && antideleteSettings.global?.enabled) {
+        if(ms.key.fromMe || ms.message.protocolMessage.key.fromMe) { 
+            console.log('Message supprimer me concernant'); 
+            return; 
+        }
 
-                    for (let i = 0; i < message.length; i++) {
-                        if (message[i].key.id === key.id) {
-                            msg = message[i];
-                            break;
-                        }
+        console.log('🗑️ Message deleted detected');
+        let key = ms.message.protocolMessage.key;
+
+        try {
+            let st = './store.json';
+            if (!fs.existsSync(st)) return;
+            
+            const data = fs.readFileSync(st, 'utf8');
+            const jsonData = JSON.parse(data);
+            let messages = jsonData.messages[key.remoteJid];
+            let msg;
+
+            if (messages) {
+                for (let i = 0; i < messages.length; i++) {
+                    if (messages[i].key.id === key.id) {
+                        msg = messages[i];
+                        break;
                     }
-
-                    if(msg === null || !msg || msg === 'undefined') {
-                        console.log('Message non trouver');
-                        return;
-                    }
-
-                    // Send to owner's inbox
-                    const ownerJid = conf.NUMERO_OWNER.replace(/[^0-9]/g, '') + '@s.whatsapp.net';
-                    
-                    await zk.sendMessage(ownerJid, {
-                        image: { url: './media/deleted-message.jpg' },
-                        caption: `┏━❑ 𝙰𝙽𝚃𝙸-𝙳𝙴𝙻𝙴𝚃𝙴 ━━━━━━━━━
-┃ 🔥 *Message Deleted Detected!*
-┃ 
-┃ 👤 *From:* @${msg.key.participant.split('@')[0]}
-┃ 📍 *Chat:* ${key.remoteJid.endsWith('@g.us') ? 'Group' : 'Private'}
-┃ ⏰ *Time:* ${new Date().toLocaleString()}
-┗━━━━━━━━━━━━━━━━━━━━
-> © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`,
-                        mentions: [msg.key.participant]
-                    }, { quoted: fkontak });
-
-                    await zk.sendMessage(ownerJid, { forward: msg }, { quoted: fkontak });
-
-                } catch (e) {
-                    console.log(e);
                 }
             }
 
+            if(!msg || msg === 'undefined') {
+                console.log('Message non trouver');
+                return;
+            }
+
+            // Send to owner's inbox
+            const ownerJid = conf.NUMERO_OWNER.replace(/[^0-9]/g, '') + '@s.whatsapp.net';
+            
+            let chatType = key.remoteJid.endsWith('@g.us') ? '𝙶𝚛𝚘𝚞𝚙' : '𝙿𝚛𝚒𝚟𝚊𝚝𝚎';
+            let chatName = key.remoteJid.endsWith('@g.us') ? (await zk.groupMetadata(key.remoteJid).catch(() => ({})))?.subject || 'Unknown Group' : 'Private Chat';
+            
+            await zk.sendMessage(ownerJid, {
+                image: { url: './media/deleted-message.jpg' },
+                caption: `┏━❑ 𝙰𝙽𝚃𝙸-𝙳𝙴𝙻𝙴𝚃𝙴 ━━━━━━━━━
+┃ 🔥 *Message Deleted Detected!*
+┃ 
+┃ 👤 *From:* @${msg.key.participant?.split('@')[0] || 'Unknown'}
+┃ 📍 *Chat:* ${chatType} - ${chatName}
+┃ ⏰ *Time:* ${new Date().toLocaleString()}
+┃ 
+┃ 📋 *Deleted Message Content:*
+┗━━━━━━━━━━━━━━━━━━━━
+> © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`,
+                mentions: msg.key.participant ? [msg.key.participant] : []
+            }, { quoted: fkontak });
+
+            await zk.sendMessage(ownerJid, { forward: msg }, { quoted: fkontak });
+
+        } catch (e) {
+            console.log('Antidelete error:', e);
+        }
+    }
+} catch (e) {
+    console.log('Antidelete system error:', e);
+}
             // ============================================
             // 📌 AUTO-STATUS HANDLER
             // ============================================
@@ -593,30 +616,41 @@ setTimeout(() => {
                 }
             }
 
-            // ============================================
-            // 📌 ANTILINK SYSTEM (Imetengwa nje)
-            // ============================================
-            try {
-                const antilinkEnabled = await verifierEtatJid(origineMessage);
-                if (texte && texte.includes('https://') && verifGroupe && antilinkEnabled) {
-                    console.log("🔗 Lien detecté");
-                    
-                    if(superUser || verifAdmin || !verifZokouAdmin) { 
-                        console.log('je fais rien'); 
-                        return;
-                    }
+                   
+// ============================================
+// 📌 ANTILINK SYSTEM (Imetengwa nje - inatumia database)
+// ============================================
+try {
+    // Load antilink settings
+    const antilinkSettings = (() => {
+        try {
+            const data = fs.readFileSync('./database/antilink.json', 'utf8');
+            return JSON.parse(data);
+        } catch {
+            return {};
+        }
+    })();
 
-                    const key = {
-                        remoteJid: origineMessage,
-                        fromMe: false,
-                        id: ms.key.id,
-                        participant: auteurMessage
-                    };
+    const antilinkEnabled = antilinkSettings[origineMessage]?.enabled || false;
+    const antilinkAction = antilinkSettings[origineMessage]?.action || 'delete';
+    
+    if (texte && texte.match(/(https?:\/\/[^\s]+)|(www\.[^\s]+)|([a-zA-Z0-9-]+\.(com|org|net|gov|edu|info|xyz|io|co|tk|ml|ga|cf|ph|link|xyz|site|online|tech|store|blog|me|tv|app|dev|club|top|live|chat|group|ws|cc|us|biz|uk|de|fr|jp|cn|br|in|au|ru|it|es|nl|se|no|dk|fi|pl|cz|hu|gr|il|kr|sg|hk|my|th|vn|pk|bd|np|lk|mm|kh|la|tw|ph|id|za|ng|ke|tz|ug|gh|zm|zw|mw|na|bw|sz|ls|mu|km|sc|mg|mw|zm|zw|na|bw))(\/[^\s]*)?/gi) && verifGroupe && antilinkEnabled) {
+        console.log("🔗 Lien detecté");
+        
+        if(superUser || verifAdmin || !verifZokouAdmin) { 
+            console.log('je fais rien'); 
+            return;
+        }
 
-                    const action = await recupererActionJid(origineMessage);
+        const key = {
+            remoteJid: origineMessage,
+            fromMe: false,
+            id: ms.key.id,
+            participant: auteurMessage
+        };
 
-                    if (action === 'remove') {
-                        let txt = `┏━❑ 𝙰𝙽𝚃𝙸𝙻𝙸𝙽𝙺 𝙰𝙲𝚃𝙸𝙾𝙽 ━━━━━━━━━
+        if (antilinkAction === 'remove') {
+            let txt = `┏━❑ 𝙰𝙽𝚃𝙸𝙻𝙸𝙽𝙺 𝙰𝙲𝚃𝙸𝙾𝙽 ━━━━━━━━━
 ┃ 🔗 *Link Detected!*
 ┃ 
 ┃ 🚫 @${auteurMessage.split("@")[0]} 
@@ -624,36 +658,36 @@ setTimeout(() => {
 ┗━━━━━━━━━━━━━━━━━━━━
 > © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`;
 
-                        await zk.sendMessage(origineMessage, {
-                            text: txt,
-                            mentions: [auteurMessage],
-                            contextInfo: {
-                                isForwarded: true,
-                                forwardedNewsletterMessageInfo: {
-                                    newsletterJid: '120363402325089913@newsletter',
-                                    newsletterName: "➤®𝐒𝐈𝐋𝐀-𝐌𝐃",
-                                    serverMessageId: 143,
-                                },
-                                forwardingScore: 999,
-                                externalAdReply: {
-                                    title: "⭕ Link Detected & Removed",
-                                    mediaType: 1,
-                                    previewType: 0,
-                                    thumbnailUrl: randomNjabulourl,
-                                    renderLargerThumbnail: false,
-                                },
-                            }
-                        }, { quoted: fkontak });
+            await zk.sendMessage(origineMessage, {
+                text: txt,
+                mentions: [auteurMessage],
+                contextInfo: {
+                    isForwarded: true,
+                    forwardedNewsletterMessageInfo: {
+                        newsletterJid: '120363402325089913@newsletter',
+                        newsletterName: "➤®𝐒𝐈𝐋𝐀-𝐌𝐃",
+                        serverMessageId: 143,
+                    },
+                    forwardingScore: 999,
+                    externalAdReply: {
+                        title: "⭕ Link Detected & Removed",
+                        mediaType: 1,
+                        previewType: 0,
+                        thumbnailUrl: randomNjabulourl,
+                        renderLargerThumbnail: false,
+                    },
+                }
+            }, { quoted: fkontak });
 
-                        try {
-                            await zk.groupParticipantsUpdate(origineMessage, [auteurMessage], "remove");
-                        } catch (e) {
-                            console.log("antilien error: " + e);
-                        }
-                        await zk.sendMessage(origineMessage, { delete: key });
+            try {
+                await zk.groupParticipantsUpdate(origineMessage, [auteurMessage], "remove");
+            } catch (e) {
+                console.log("antilien error: " + e);
+            }
+            await zk.sendMessage(origineMessage, { delete: key });
 
-                    } else if (action === 'delete') {
-                        let txt = `┏━❑ 𝙰𝙽𝚃𝙸𝙻𝙸𝙽𝙺 𝚆𝙰𝚁𝙽𝙸𝙽𝙶 ━━━━━━━━━
+        } else if (antilinkAction === 'delete') {
+            let txt = `┏━❑ 𝙰𝙽𝚃𝙸𝙻𝙸𝙽𝙺 𝚆𝙰𝚁𝙽𝙸𝙽𝙶 ━━━━━━━━━
 ┃ 🔗 *Link Detected!*
 ┃ 
 ┃ ⚠️ @${auteurMessage.split("@")[0]}
@@ -662,36 +696,48 @@ setTimeout(() => {
 ┗━━━━━━━━━━━━━━━━━━━━
 > © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`;
 
-                        await zk.sendMessage(origineMessage, {
-                            text: txt,
-                            mentions: [auteurMessage],
-                            contextInfo: {
-                                isForwarded: true,
-                                forwardedNewsletterMessageInfo: {
-                                    newsletterJid: '120363402325089913@newsletter',
-                                    newsletterName: "➤®𝐒𝐈𝐋𝐀-𝐌𝐃",
-                                    serverMessageId: 143,
-                                },
-                                forwardingScore: 999,
-                                externalAdReply: {
-                                    title: "⭕ Link Detected & Deleted",
-                                    mediaType: 1,
-                                    previewType: 0,
-                                    thumbnailUrl: randomNjabulourl,
-                                    renderLargerThumbnail: false,
-                                },
-                            }
-                        }, { quoted: fkontak });
+            await zk.sendMessage(origineMessage, {
+                text: txt,
+                mentions: [auteurMessage],
+                contextInfo: {
+                    isForwarded: true,
+                    forwardedNewsletterMessageInfo: {
+                        newsletterJid: '120363402325089913@newsletter',
+                        newsletterName: "➤®𝐒𝐈𝐋𝐀-𝐌𝐃",
+                        serverMessageId: 143,
+                    },
+                    forwardingScore: 999,
+                    externalAdReply: {
+                        title: "⭕ Link Detected & Deleted",
+                        mediaType: 1,
+                        previewType: 0,
+                        thumbnailUrl: randomNjabulourl,
+                        renderLargerThumbnail: false,
+                    },
+                }
+            }, { quoted: fkontak });
 
-                        await zk.sendMessage(origineMessage, { delete: key });
+            await zk.sendMessage(origineMessage, { delete: key });
 
-                    } else if(action === 'warn') {
-                        const {getWarnCountByJID, ajouterUtilisateurAvecWarnCount} = require('./bdd/warn');
-                        let warn = await getWarnCountByJID(auteurMessage);
-                        let warnlimit = conf.WARN_COUNT;
+        } else if(antilinkAction === 'warn') {
+            const {getWarnCountByJID, ajouterUtilisateurAvecWarnCount} = require('./bdd/warn');
+            
+            // Initialize warned users for this group if not exists
+            if (!antilinkSettings[origineMessage].warnedUsers) {
+                antilinkSettings[origineMessage].warnedUsers = {};
+            }
+            
+            let warnCount = antilinkSettings[origineMessage].warnedUsers[auteurMessage] || 0;
+            warnCount++;
+            antilinkSettings[origineMessage].warnedUsers[auteurMessage] = warnCount;
+            
+            // Save updated settings
+            fs.writeFileSync('./database/antilink.json', JSON.stringify(antilinkSettings, null, 2));
+            
+            let warnlimit = conf.WARN_COUNT || 3;
 
-                        if (warn >= warnlimit) {
-                            var kikmsg = `┏━❑ 𝙰𝙽𝚃𝙸𝙻𝙸𝙽𝙺 𝙰𝙲𝚃𝙸𝙾𝙽 ━━━━━━━━━
+            if (warnCount >= warnlimit) {
+                var kikmsg = `┏━❑ 𝙰𝙽𝚃𝙸𝙻𝙸𝙽𝙺 𝙰𝙲𝚃𝙸𝙾𝙽 ━━━━━━━━━
 ┃ 🔗 *Link Detected!*
 ┃ 
 ┃ 🚫 @${auteurMessage.split("@")[0]}
@@ -700,37 +746,40 @@ setTimeout(() => {
 ┗━━━━━━━━━━━━━━━━━━━━
 > © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`;
 
-                            await zk.sendMessage(origineMessage, {
-                                text: kikmsg,
-                                mentions: [auteurMessage]
-                            }, { quoted: fkontak });
+                await zk.sendMessage(origineMessage, {
+                    text: kikmsg,
+                    mentions: [auteurMessage]
+                }, { quoted: fkontak });
 
-                            await zk.groupParticipantsUpdate(origineMessage, [auteurMessage], "remove");
-                            await zk.sendMessage(origineMessage, { delete: key });
-                        } else {
-                            var rest = warnlimit - warn;
-                            var msg = `┏━❑ 𝙰𝙽𝚃𝙸𝙻𝙸𝙽𝙺 𝚆𝙰𝚁𝙽𝙸𝙽𝙶 ━━━━━━━━━
+                await zk.groupParticipantsUpdate(origineMessage, [auteurMessage], "remove");
+                await zk.sendMessage(origineMessage, { delete: key });
+                
+                // Reset warnings after removal
+                delete antilinkSettings[origineMessage].warnedUsers[auteurMessage];
+                fs.writeFileSync('./database/antilink.json', JSON.stringify(antilinkSettings, null, 2));
+                
+            } else {
+                var rest = warnlimit - warnCount;
+                var msg = `┏━❑ 𝙰𝙽𝚃𝙸𝙻𝙸𝙽𝙺 𝚆𝙰𝚁𝙽𝙸𝙽𝙶 ━━━━━━━━━
 ┃ 🔗 *Link Detected!*
 ┃ 
 ┃ ⚠️ @${auteurMessage.split("@")[0]}
-┃ 📊 *Warning: ${warn + 1}/${warnlimit}*
+┃ 📊 *Warning: ${warnCount}/${warnlimit}*
 ┃ ⚡ *Remaining: ${rest} warnings*
 ┗━━━━━━━━━━━━━━━━━━━━
 > © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`;
 
-                            await ajouterUtilisateurAvecWarnCount(auteurMessage);
-                            await zk.sendMessage(origineMessage, {
-                                text: msg,
-                                mentions: [auteurMessage]
-                            }, { quoted: fkontak });
-                            await zk.sendMessage(origineMessage, { delete: key });
-                        }
-                    }
-                }
-            } catch (e) {
-                console.log("antilink error: " + e);
+                await zk.sendMessage(origineMessage, {
+                    text: msg,
+                    mentions: [auteurMessage]
+                }, { quoted: fkontak });
+                await zk.sendMessage(origineMessage, { delete: key });
             }
-
+        }
+    }
+} catch (e) {
+    console.log("antilink error: " + e);
+}
             // ============================================
             // 📌 ANTIBOT SYSTEM
             // ============================================
