@@ -591,31 +591,108 @@ try {
                 }
             } catch (error) {}
 
-            // ============================================
-            // 📌 CHATBOT RESPONSES (Bila prefix)
-            // ============================================
-            if (!verifCom && texte && !verifGroupe && conf.CHATBOT === "yes") {
-                const lowerText = texte.toLowerCase().trim();
-                for (const [key, response] of Object.entries(chatbotResponses)) {
-                    if (lowerText.includes(key)) {
-                        await zk.sendMessage(origineMessage, {
-                            text: response.replace('${prefixe}', prefixe),
-                            contextInfo: {
-                                mentionedJid: [auteurMessage],
-                                forwardingScore: 999,
-                                isForwarded: true,
-                                forwardedNewsletterMessageInfo: {
-                                    newsletterJid: '120363402325089913@newsletter',
-                                    newsletterName: '© 𝚂𝙸𝙻𝙰 𝙼𝙳',
-                                    serverMessageId: 143,
-                                }
-                            }
-                        }, { quoted: fkontak });
-                        break;
-                    }
+    // ============================================
+// 📌 CHATBOT AI SYSTEM (Inatumia API)
+// ============================================
+try {
+    // Load chatbot settings
+    const chatbotSettings = (() => {
+        try {
+            const data = fs.readFileSync('./database/chatbot.json', 'utf8');
+            return JSON.parse(data);
+        } catch {
+            return { global: { enabled: false } };
+        }
+    })();
+
+    // If chatbot is enabled, message is in private chat, and not a command
+    if (chatbotSettings.global?.enabled && 
+        !verifGroupe && 
+        !verifCom && 
+        texte && 
+        !ms.key.fromMe) {
+        
+        console.log('🤖 Chatbot AI processing message:', texte);
+        
+        // Send typing indicator
+        await zk.sendPresenceUpdate('composing', origineMessage);
+        
+        try {
+            // Call AI API
+            const apiUrl = `https://api.yupra.my.id/api/ai/gpt5?text=${encodeURIComponent(texte.trim())}`;
+            
+            const response = await axios.get(apiUrl, {
+                timeout: 30000,
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                }
+            });
+
+            let aiResponse = '';
+            
+            // Parse response
+            if (response.data) {
+                if (typeof response.data === 'string') {
+                    aiResponse = response.data;
+                } else if (response.data.result) {
+                    aiResponse = response.data.result;
+                } else if (response.data.message) {
+                    aiResponse = response.data.message;
+                } else if (response.data.response) {
+                    aiResponse = response.data.response;
+                } else if (response.data.data) {
+                    aiResponse = response.data.data;
+                } else {
+                    aiResponse = JSON.stringify(response.data);
                 }
             }
 
+            if (aiResponse) {
+                await zk.sendMessage(origineMessage, {
+                    text: `┏━❑ 𝙲𝙷𝙰𝚃𝙱𝙾𝚃 𝙰𝙸 ━━━━━━━━━
+┃ 🤖 ${aiResponse}
+┗━━━━━━━━━━━━━━━━━━━━
+> © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`,
+                    contextInfo: {
+                        mentionedJid: [auteurMessage],
+                        forwardingScore: 999,
+                        isForwarded: true,
+                        forwardedNewsletterMessageInfo: {
+                            newsletterJid: '120363402325089913@newsletter',
+                            newsletterName: '© 𝚂𝙸𝙻𝙰 𝙼𝙳',
+                            serverMessageId: 143,
+                        }
+                    }
+                }, { quoted: ms });
+            } else {
+                throw new Error('Empty response');
+            }
+            
+        } catch (apiError) {
+            console.error('Chatbot API Error:', apiError.message);
+            
+            // Fallback response
+            await zk.sendMessage(origineMessage, {
+                text: `┏━❑ 𝙲𝙷𝙰𝚃𝙱𝙾𝚃 𝙰𝙸 ━━━━━━━━━
+┃ ⚠️ 𝙼𝚊𝚊𝚏𝚊, 𝚜𝚒𝚠𝚎𝚣𝚊 𝚔𝚞𝚙𝚊𝚝𝚊 𝚓𝚒𝚋𝚞 𝚔𝚠𝚊 𝚜𝚊𝚜𝚊.
+┃ 
+┃ 📋 *𝚂𝚊𝚋𝚊𝚋:* ${apiError.message}
+┃ 
+┃ 🔄 𝚃𝚊𝚛𝚝𝚊𝚛𝚒𝚊 𝚓𝚊𝚛𝚒𝚋𝚞 𝚝𝚎𝚗𝚊 𝚋𝚊𝚊𝚍𝚊𝚎.
+┗━━━━━━━━━━━━━━━━━━━━
+> © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`,
+                contextInfo: {
+                    mentionedJid: [auteurMessage]
+                }
+            }, { quoted: ms });
+        }
+        
+        // Stop typing
+        await zk.sendPresenceUpdate('paused', origineMessage);
+    }
+} catch (e) {
+    console.log('Chatbot system error:', e);
+}        
                    
 // ============================================
 // 📌 ANTILINK SYSTEM (Imetengwa nje - inatumia database)
