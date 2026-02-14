@@ -1017,86 +1017,73 @@ try {
             }
         });
 
-        // ============================================
-        // 📌 GROUP UPDATE EVENTS (Welcome/Goodbye)
-        // ============================================
-        const { recupevents } = require('./bdd/welcome');
+ // ============================================
+// 📌 WELCOME/GOODBYE EVENTS
+// ============================================
+const welcomeSettings = (() => {
+    try {
+        return JSON.parse(fs.readFileSync('./database/welcome.json', 'utf8'));
+    } catch {
+        return {};
+    }
+})();
 
-        zk.ev.on('group-participants.update', async (group) => {
-            console.log(group);
+zk.ev.on('group-participants.update', async (group) => {
+    try {
+        const metadata = await zk.groupMetadata(group.id);
+        const settings = welcomeSettings[group.id] || { welcome: 'off', goodbye: 'off' };
+        const randomThumb = getRandomThumbnail();
 
-            let ppgroup;
-            try {
-                ppgroup = await zk.profilePictureUrl(group.id, 'image');
-            } catch {
-                ppgroup = '';
+        if (group.action === 'add' && settings.welcome === 'on') {
+            let msg = `┏━❑ 𝚆𝙴𝙻𝙲𝙾𝙼𝙴 ━━━━━━━━━\n`;
+            for (let membre of group.participants) {
+                msg += `┃ 👋 @${membre.split("@")[0]}\n`;
             }
+            msg += `┗━━━━━━━━━━━━━━━━━━━━`;
 
-            try {
-                const metadata = await zk.groupMetadata(group.id);
-
-                if (group.action == 'add' && (await recupevents(group.id, "welcome") == 'on')) {
-                    let msg = `┏━❑ 𝚆𝙴𝙻𝙲𝙾𝙼𝙴 ━━━━━━━━━\n`;
-                    let membres = group.participants;
-                    for (let membre of membres) {
-                        msg += `┃ 🖐️ 𝚆𝚎𝚕𝚌𝚘𝚖𝚎 @${membre.split("@")[0]}!\n`;
+            await zk.sendMessage(group.id, {
+                image: { url: randomThumb },
+                caption: msg,
+                mentions: group.participants,
+                contextInfo: {
+                    externalAdReply: {
+                        title: `👋 𝙽𝚎𝚠 𝙼𝚎𝚖𝚋𝚎𝚛`,
+                        body: metadata.subject.substring(0, 30),
+                        mediaType: 1,
+                        previewType: 0,
+                        thumbnailUrl: randomThumb,
+                        renderLargerThumbnail: false,
                     }
-                    msg += `┗━━━━━━━━━━━━━━━━━━━━\n> © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`;
-
-                    await zk.sendMessage(group.id, {
-                        text: msg,
-                        mentions: group.participants,
-                        contextInfo: {
-                            isForwarded: true,
-                            forwardedNewsletterMessageInfo: {
-                                newsletterJid: '120363402325089913@newsletter',
-                                newsletterName: "➤®𝐒𝐈𝐋𝐀-𝐌𝐃",
-                                serverMessageId: 143,
-                            },
-                            forwardingScore: 999,
-                            externalAdReply: {
-                                title: "🖐️ New Member Joined",
-                                mediaType: 1,
-                                previewType: 0,
-                                thumbnailUrl: randomNjabulourl,
-                                renderLargerThumbnail: false,
-                            },
-                        }
-                    }, { quoted: fkontak });
-
-                } else if (group.action == 'remove' && (await recupevents(group.id, "goodbye") == 'on')) {
-                    let msg = `┏━❑ 𝙶𝙾𝙾𝙳𝙱𝚈𝙴 ━━━━━━━━━\n`;
-                    let membres = group.participants;
-                    for (let membre of membres) {
-                        msg += `┃ 👋 𝙶𝚘𝚘𝚍𝚋𝚢𝚎 @${membre.split("@")[0]}!\n`;
-                    }
-                    msg += `┗━━━━━━━━━━━━━━━━━━━━\n> © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`;
-
-                    await zk.sendMessage(group.id, {
-                        text: msg,
-                        mentions: group.participants,
-                        contextInfo: {
-                            isForwarded: true,
-                            forwardedNewsletterMessageInfo: {
-                                newsletterJid: '120363402325089913@newsletter',
-                                newsletterName: "➤®𝐒𝐈𝐋𝐀-𝐌𝐃",
-                                serverMessageId: 143,
-                            },
-                            forwardingScore: 999,
-                            externalAdReply: {
-                                title: "👋 Member Left",
-                                mediaType: 1,
-                                previewType: 0,
-                                thumbnailUrl: randomNjabulourl,
-                                renderLargerThumbnail: false,
-                            },
-                        }
-                    }, { quoted: fkontak });
                 }
-            } catch (e) {
-                console.error(e);
+            }, { quoted: fkontak });
+
+        } else if (group.action === 'remove' && settings.goodbye === 'on') {
+            let msg = `┏━❑ 𝙶𝙾𝙾𝙳𝙱𝚈𝙴 ━━━━━━━━━\n`;
+            for (let membre of group.participants) {
+                msg += `┃ 👋 @${membre.split("@")[0]}\n`;
             }
-        });
+            msg += `┗━━━━━━━━━━━━━━━━━━━━`;
+
+            await zk.sendMessage(group.id, {
+                image: { url: randomThumb },
+                caption: msg,
+                mentions: group.participants,
+                contextInfo: {
+                    externalAdReply: {
+                        title: `👋 𝙼𝚎𝚖𝚋𝚎𝚛 𝙻𝚎𝚏𝚝`,
+                        body: metadata.subject.substring(0, 30),
+                        mediaType: 1,
+                        previewType: 0,
+                        thumbnailUrl: randomThumb,
+                        renderLargerThumbnail: false,
+                    }
+                }
+            }, { quoted: fkontak });
+        }
+    } catch (e) {
+        console.error('Welcome/Goodbye error:', e);
+    }
+});
 
         // ============================================
         // 📌 CRON SETUP
