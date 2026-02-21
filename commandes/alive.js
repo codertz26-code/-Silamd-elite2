@@ -1,9 +1,7 @@
 const { silamd } = require("../silamd/sila");
 const moment = require("moment-timezone");
-const { getBuffer } = require("../silamd/dl/Function");
-const { default: axios } = require('axios');
 
-// FakevCard (badala ya contactMessage)
+// FakevCard
 const fkontak = {
     "key": {
         "participant": '0@s.whatsapp.net',
@@ -16,17 +14,8 @@ const fkontak = {
     }
 };
 
-// List of image URLs
-const silaurl = [
-    "https://files.catbox.moe/krnlo3.jpeg",
-    "https://files.catbox.moe/36vahk.png",
-    "https://files.catbox.moe/j7kue0.jpeg",
-    "https://files.catbox.moe/edcfwx.jpeg",
-    "https://files.catbox.moe/98k75b.jpeg"
-];
-
-// Select a random image
-const randomSilaurl = silaurl[Math.floor(Math.random() * silaurl.length)];
+// Thumbnail moja tu (iliyotolewa)
+const ALIVE_THUMBNAIL = "https://files.catbox.moe/98k75b.jpeg";
 
 const runtime = function (seconds) { 
     seconds = Number(seconds); 
@@ -43,43 +32,34 @@ const runtime = function (seconds) {
 
 sila({ 
     nomCom: 'alive',
-    desc: 'To check runtime',
+    alias: ['alive', 'runtime', 'uptime'],
+    desc: 'To check bot runtime',
     Categorie: 'General',
     reaction: '⏰', 
     fromMe: 'true', 
 },
 async (dest, zk, commandeOptions) => {
-    const { ms, arg, repondre, nomAuteurMessage } = commandeOptions;
+    const { ms, repondre, nomAuteurMessage } = commandeOptions;
 
     try {
-        // Send image instead of audio
-        await zk.sendMessage(dest, { 
-            image: { url: randomSilaurl },
-            caption: `┏━❑ 𝙰𝙻𝙸𝚅𝙴 𝙸𝙽𝙵𝙾 ━━━━━━━━━
-┃ ⏰ *𝚁𝚞𝚗𝚝𝚒𝚖𝚎:* ${runtime(process.uptime())}
-┃ 🤖 *𝙱𝚘𝚝:* 𝚂𝙸𝙻𝙰-𝙼𝙳
-┃ ⚡ *𝚂𝚝𝚊𝚝𝚞𝚜:* 𝙾𝚗𝚕𝚒𝚗𝚎
-┃ 👤 *𝚄𝚜𝚎𝚛:* @${dest.split('@')[0]}
+        // Send text message with external ad reply only (no image)
+        await zk.sendMessage(dest, {
+            text: `┏━❑ 𝙰𝙻𝙸𝚅𝙴 ━━━━━━━━━
+┃ ⏰ *${runtime(process.uptime())}*
 ┗━━━━━━━━━━━━━━━━━━━━
 > © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`,
-            mentions: [dest],
             contextInfo: {
-                isForwarded: true,
-                forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363402325089913@newsletter',
-                    newsletterName: "➤®𝐒𝐈𝐋𝐀-𝐌𝐃",
-                    serverMessageId: 143,
-                },
-                forwardingScore: 999,
+                mentionedJid: [nomAuteurMessage],
                 externalAdReply: {
                     title: `⏰ 𝙱𝚘𝚝 𝙰𝚕𝚒𝚟𝚎`,
                     body: `𝚁𝚞𝚗𝚝𝚒𝚖𝚎: ${runtime(process.uptime())}`,
                     mediaType: 1,
                     previewType: 0,
-                    thumbnailUrl: randomSilaurl,
-                    renderLargerThumbnail: true,
-                },
-            },
+                    thumbnailUrl: ALIVE_THUMBNAIL,
+                    sourceUrl: 'https://github.com/',
+                    renderLargerThumbnail: false,
+                }
+            }
         }, { quoted: fkontak });
 
     } catch (e) {
