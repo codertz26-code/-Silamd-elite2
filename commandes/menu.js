@@ -1,12 +1,9 @@
 const { silamd } = require("../silamd/sila");
-const fs = require('fs');
-const path = require('path');
 const moment = require("moment-timezone");
 
 const menuImage = "https://files.catbox.moe/36vahk.png";
-const CHANNEL_LINK = "https://whatsapp.com/channel/0029VbBG4gfISTkCpKxyMH02";
 
-// FakevCard iliyobadilishwa kama ulivyotaka
+// FakevCard
 const fkontak = {
     "key": {
         "participant": '0@s.whatsapp.net',
@@ -19,70 +16,11 @@ const fkontak = {
     }
 };
 
-// Get all commands from folder automatically
-const getCommands = () => {
-    try {
-        const commandsDir = path.join(__dirname);
-        const files = fs.readdirSync(commandsDir).filter(f => f.endsWith('.js'));
-
-        const commandList = [];
-        files.forEach(file => {
-            const name = file.replace('.js', '');
-            // Exclude menu2 and other special files if needed
-            if (name !== 'menu2' && name !== 'menu') {
-                commandList.push(name);
-            }
-        });
-
-        return commandList;
-    } catch (e) {
-        console.log("Error reading commands:", e);
-        return [];
-    }
-};
-
-// Group commands by category
-const getCommandsByCategory = () => {
-    try {
-        const commandsDir = path.join(__dirname);
-        const files = fs.readdirSync(commandsDir).filter(f => f.endsWith('.js'));
-        
-        const categories = {};
-        
-        files.forEach(file => {
-            const name = file.replace('.js', '');
-            if (name === 'menu2' || name === 'menu') return;
-            
-            // Try to get category from command file
-            let category = 'General';
-            try {
-                const commandPath = path.join(commandsDir, file);
-                const commandContent = fs.readFileSync(commandPath, 'utf8');
-                const categoryMatch = commandContent.match(/Categorie:\s*['"]([^'"]+)['"]/);
-                if (categoryMatch && categoryMatch[1]) {
-                    category = categoryMatch[1];
-                }
-            } catch (e) {
-                // Ignore errors
-            }
-            
-            if (!categories[category]) {
-                categories[category] = [];
-            }
-            categories[category].push(name);
-        });
-        
-        return categories;
-    } catch (e) {
-        console.log("Error reading commands by category:", e);
-        return {};
-    }
-};
-
-sila({
+silamd({
     nomCom: 'menu',
+    alias: ['menu', 'help', 'cmd'],
     reaction: '📋',
-    desc: 'Show bot menu with all commands',
+    desc: 'Show bot menu',
     Categorie: 'General',
     fromMe: 'true'
 },
@@ -90,75 +28,47 @@ async(dest, zk, commandeOptions) => {
 try{
     const { ms, repondre, prefixe, nomAuteurMessage } = commandeOptions;
 
-    // Get all commands
-    const allCommands = getCommands();
-    const categories = getCommandsByCategory();
-    const categoryNames = Object.keys(categories);
-
-    // Create buttons (tatu: Get Bot, Owner, na Channel)
+    // Buttons: All Menu, Owner, Get Bot
     const commandButtons = [
-        { buttonId: `${prefixe}getbot`, buttonText: { displayText: "🤖 Get Bot" }, type: 1 },
-        { buttonId: `${prefixe}owner`, buttonText: { displayText: "👨‍💼 Owner" }, type: 1 },
-        { buttonId: CHANNEL_LINK, buttonText: { displayText: "📢 Channel" }, type: 1 } // Hii itafungua link moja kwa moja
+        { buttonId: `${prefixe}allmenu`, buttonText: { displayText: "📋 𝙰𝙻𝙻 𝙼𝙴𝙽𝚄" }, type: 1 },
+        { buttonId: `${prefixe}owner`, buttonText: { displayText: "👨‍💼 𝙾𝚆𝙽𝙴𝚁" }, type: 1 },
+        { buttonId: `${prefixe}getbot`, buttonText: { displayText: "🤖 𝙶𝙴𝚃 𝙱𝙾𝚃" }, type: 1 }
     ];
 
-    // Generate commands list with nice formatting
-    let commandsText = '';
-    
-    if (categoryNames.length > 1) {
-        // Show by categories
-        for (const category of categoryNames.sort()) {
-            commandsText += `┏━❑ *${category.toUpperCase()}* ━━━━━━━━━\n`;
-            categories[category].sort().forEach((cmd, index) => {
-                commandsText += `┃ ${index + 1}. ${prefixe}${cmd}\n`;
-            });
-            commandsText += `┗━━━━━━━━━━━━━━━━━━━━\n\n`;
-        }
-    } else {
-        // Simple list if no categories
-        commandsText += `┏━❑ 𝐀𝐋𝐋 𝐂𝐎𝐌𝐌𝐀𝐍𝐃𝐒 ━━━━━━━━━\n`;
-        allCommands.sort().forEach((cmd, index) => {
-            commandsText += `┃ ${index + 1}. ${prefixe}${cmd}\n`;
-        });
-        commandsText += `┗━━━━━━━━━━━━━━━━━━━━\n`;
-    }
-
+    // TEXT ONLY - NO IMAGE
     const buttonMessage = {
-        image: { url: menuImage },
-        caption: `┏━❑ 𝐒𝐈𝐋𝐀-𝐌𝐃 𝐌𝐄𝐍𝐔 ━━━━━━━━━
-┃ 🤖 *Bot Name:* 𝐒𝐈𝐋𝐀-𝐌𝐃
-┃ ⏰ *Time:* ${moment().tz("Africa/Nairobi").format("DD/MM/YYYY HH:mm")}
-┃ 📊 *Total Cmds:* ${allCommands.length}
-┃ 👤 *User:* @${dest.split('@')[0]}
+        text: `┏━❑ 𝐒𝐈𝐋𝐀-𝐌𝐃 ━━━━━━━━━
+┃ 🤖 *𝙱𝚘𝚝:* 𝐒𝐈𝐋𝐀-𝙼𝙳
+┃ ⏰ *𝚃𝚒𝚖𝚎:* ${moment().tz("Africa/Nairobi").format("DD/MM/YYYY HH:mm")}
+┃ 👤 *𝚄𝚜𝚎𝚛:* @${dest.split('@')[0]}
 ┗━━━━━━━━━━━━━━━━━━━━
 
-${commandsText}
-
 ━━━━━━━━━━━━━━━━━━━━
-> © 𝐏𝐨𝐰𝐞𝐫𝐞𝐝 𝐛𝐲 𝐒𝐢𝐥𝐚 𝐓𝐞𝐜𝐡`,
-        footer: "𝐒𝐈𝐋𝐀-𝐌𝐃 𝐁𝐎𝐓 © 2026",
+> © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`,
+        footer: "𝚂𝙸𝙻𝙰-𝙼𝙳 𝙱𝙾𝚃 © 2026",
         buttons: commandButtons,
-        headerType: 4,
+        headerType: 1,
         contextInfo: {
             mentionedJid: [dest],
-            forwardingScore: 999,
-            isForwarded: true,
-            forwardedNewsletterMessageInfo: {
-                newsletterJid: '120363402325089913@newsletter',
-                newsletterName: '© 𝐒𝐈𝐋𝐀 𝐌𝐃',
-                serverMessageId: 143,
+            externalAdReply: {
+                title: `📋 𝚂𝙸𝙻𝙰-𝙼𝙳 𝙼𝚎𝚗𝚞`,
+                body: `👤 @${dest.split('@')[0]}`,
+                mediaType: 1,
+                previewType: 0,
+                thumbnailUrl: menuImage,  // Thumbnail pekee
+                sourceUrl: 'https://github.com/',
+                renderLargerThumbnail: false,
             }
         }
     };
 
-    // Send menu with new fkontak
     await zk.sendMessage(dest, buttonMessage, { quoted: fkontak });
 
 } catch (e) {
-    console.log("❌ Menu Command Error: " + e);
-    repondre(`┏━❑ 𝐄𝐑𝐑𝐎𝐑 ━━━━━━━━━
+    console.log("❌ Menu Error: " + e);
+    repondre(`┏━❑ 𝙴𝚁𝚁𝙾𝚁 ━━━━━━━━━
 ┃ ❌ ${e.message}
 ┗━━━━━━━━━━━━━━━━━━━━
-> © 𝐏𝐨𝐰𝐞𝐫𝐞𝐝 𝐛𝐲 𝐒𝐢𝐥𝐚 𝐓𝐞𝐜𝐡`);
+> © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`);
 }
 });
