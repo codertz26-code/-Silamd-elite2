@@ -1,4 +1,4 @@
-const { silamd } = require("../silamd/sila");
+const { sila } = require("../silamd/sila");
 const moment = require("moment-timezone");
 
 const menuImage = "https://files.catbox.moe/36vahk.png";
@@ -16,7 +16,7 @@ const fkontak = {
     }
 };
 
-silamd({
+sila({ 
     nomCom: 'menu',
     alias: ['menu', 'help', 'cmd'],
     reaction: '📋',
@@ -28,14 +28,12 @@ async(dest, zk, commandeOptions) => {
 try{
     const { ms, repondre, prefixe, nomAuteurMessage } = commandeOptions;
 
-    // Buttons: All Menu, Owner, Get Bot
     const commandButtons = [
         { buttonId: `${prefixe}allmenu`, buttonText: { displayText: "📋 𝙰𝙻𝙻 𝙼𝙴𝙽𝚄" }, type: 1 },
         { buttonId: `${prefixe}owner`, buttonText: { displayText: "👨‍💼 𝙾𝚆𝙽𝙴𝚁" }, type: 1 },
         { buttonId: `${prefixe}getbot`, buttonText: { displayText: "🤖 𝙶𝙴𝚃 𝙱𝙾𝚃" }, type: 1 }
     ];
 
-    // TEXT ONLY - NO IMAGE
     const buttonMessage = {
         text: `┏━❑ 𝐒𝐈𝐋𝐀-𝐌𝐃 ━━━━━━━━━
 ┃ 🤖 *𝙱𝚘𝚝:* 𝐒𝐈𝐋𝐀-𝙼𝙳
@@ -55,9 +53,9 @@ try{
                 body: `👤 @${dest.split('@')[0]}`,
                 mediaType: 1,
                 previewType: 0,
-                thumbnailUrl: menuImage,  // Thumbnail pekee
+                thumbnailUrl: menuImage,
                 sourceUrl: 'https://github.com/',
-                renderLargerThumbnail: false,
+                renderLargerThumbnail: true, // THUMBNAIL KUBWA
             }
         }
     };
