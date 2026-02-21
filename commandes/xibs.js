@@ -29,7 +29,7 @@ async (dest, zk, commandeOptions) => {
     try {
         const { ms, repondre, prefixe, nomAuteurMessage } = commandeOptions;
 
-        // Create interactive buttons
+        // Create interactive buttons - NJIA SAHIHI
         const interactiveButtons = [
             {
                 name: 'cta_call',
@@ -55,6 +55,7 @@ async (dest, zk, commandeOptions) => {
             }
         ];
 
+        // NJIA SAHIHI YA KUTUMA INTERACTIVE BUTTONS
         const buttonMessage = {
             text: `┏━❑ 𝚇𝙸𝙱𝚂 𝙸𝙽𝙵𝙾 ━━━━━━━━━
 ┃ 🔗 *𝙽𝚊𝚖𝚎:* XIBS Bot
@@ -68,7 +69,7 @@ async (dest, zk, commandeOptions) => {
 𝙲𝚑𝚘𝚘𝚜𝚎 𝚊𝚗 𝚘𝚙𝚝𝚒𝚘𝚗 𝚋𝚎𝚕𝚘𝚠:
 > © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`,
             footer: "𝚂𝙸𝙻𝙰-𝙼𝙳 𝙱𝙾𝚃 © 2026",
-            buttons: interactiveButtons,
+            interactiveButtons: interactiveButtons, // BADALA YA 'buttons'
             headerType: 1,
             contextInfo: {
                 mentionedJid: [dest],
