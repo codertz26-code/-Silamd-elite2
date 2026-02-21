@@ -94,11 +94,9 @@ async (dest, zk, commandeOptions) => {
 > © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`);
 
         let videoData = null;
-        let isDirectUrl = false;
 
         // Check if it's a direct YouTube URL
         if (q.includes('youtube.com') || q.includes('youtu.be')) {
-            isDirectUrl = true;
             const videoId = q.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/)?.[1];
 
             if (!videoId) {
@@ -160,12 +158,12 @@ async (dest, zk, commandeOptions) => {
         // Create buttons for download options
         const buttons = [
             {
-                buttonId: `${prefixe}audiostream_${encodedUrl}_${encodedTitle}_${encodedAuthor}_${encodedThumb}`,
+                buttonId: `${prefixe}audiostream ${encodedUrl} ${encodedTitle} ${encodedAuthor} ${encodedThumb}`,
                 buttonText: { displayText: "🎵 𝙰𝚄𝙳𝙸𝙾 𝙼𝙿𝟹" },
                 type: 1
             },
             {
-                buttonId: `${prefixe}audiodoc_${encodedUrl}_${encodedTitle}_${encodedAuthor}_${encodedThumb}`,
+                buttonId: `${prefixe}audiodoc ${encodedUrl} ${encodedTitle} ${encodedAuthor} ${encodedThumb}`,
                 buttonText: { displayText: "📄 𝙰𝚄𝙳𝙸𝙾 𝙳𝙾𝙲" },
                 type: 1
             }
@@ -238,7 +236,14 @@ silamd({
 },
 async (dest, zk, commandeOptions) => {
     try {
+        // TUMIA COMMANDOPTIONS KAMILI
         const { ms, arg, repondre, nomAuteurMessage } = commandeOptions;
+        
+        // CHECK KWENYE MSG OBJECT
+        if (!ms) {
+            console.log("❌ ms is undefined in audiostream");
+            return;
+        }
 
         if (!arg[0]) return;
 
@@ -249,6 +254,7 @@ async (dest, zk, commandeOptions) => {
         const author = Buffer.from(encodedAuthor, 'base64').toString('utf-8');
         const thumbnail = Buffer.from(encodedThumb, 'base64').toString('utf-8');
 
+        // SEND REACTION - TUMIA ms.key
         await zk.sendMessage(dest, {
             react: { text: "⬇️", key: ms.key }
         });
@@ -281,6 +287,7 @@ async (dest, zk, commandeOptions) => {
                 }
             }, { quoted: fkontak });
 
+            // SEND SUCCESS REACTION
             await zk.sendMessage(dest, {
                 react: { text: "✅", key: ms.key }
             });
@@ -291,13 +298,17 @@ async (dest, zk, commandeOptions) => {
 
     } catch (e) {
         console.log("❌ Audio Stream Error: " + e);
-        await zk.sendMessage(dest, {
-            react: { text: "❌", key: ms.key }
-        });
-        await repondre(`┏━❑ 𝙴𝚁𝚁𝙾𝚁 ━━━━━━━━━
+        if (commandeOptions?.ms) {
+            await zk.sendMessage(dest, {
+                react: { text: "❌", key: commandeOptions.ms.key }
+            });
+        }
+        if (commandeOptions?.repondre) {
+            await commandeOptions.repondre(`┏━❑ 𝙴𝚁𝚁𝙾𝚁 ━━━━━━━━━
 ┃ ❌ 𝙵𝚊𝚒𝚕𝚎𝚍 𝚝𝚘 𝚍𝚘𝚠𝚗𝚕𝚘𝚊𝚍
 ┗━━━━━━━━━━━━━━━━━━━━
 > © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`);
+        }
     }
 });
 
@@ -315,7 +326,14 @@ silamd({
 },
 async (dest, zk, commandeOptions) => {
     try {
+        // TUMIA COMMANDOPTIONS KAMILI
         const { ms, arg, repondre, nomAuteurMessage } = commandeOptions;
+        
+        // CHECK KWENYE MSG OBJECT
+        if (!ms) {
+            console.log("❌ ms is undefined in audiodoc");
+            return;
+        }
 
         if (!arg[0]) return;
 
@@ -326,6 +344,7 @@ async (dest, zk, commandeOptions) => {
         const author = Buffer.from(encodedAuthor, 'base64').toString('utf-8');
         const thumbnail = Buffer.from(encodedThumb, 'base64').toString('utf-8');
 
+        // SEND REACTION - TUMIA ms.key
         await zk.sendMessage(dest, {
             react: { text: "⬇️", key: ms.key }
         });
@@ -358,6 +377,7 @@ async (dest, zk, commandeOptions) => {
                 }
             }, { quoted: fkontak });
 
+            // SEND SUCCESS REACTION
             await zk.sendMessage(dest, {
                 react: { text: "✅", key: ms.key }
             });
@@ -368,12 +388,16 @@ async (dest, zk, commandeOptions) => {
 
     } catch (e) {
         console.log("❌ Audio Document Error: " + e);
-        await zk.sendMessage(dest, {
-            react: { text: "❌", key: ms.key }
-        });
-        await repondre(`┏━❑ 𝙴𝚁𝚁𝙾𝚁 ━━━━━━━━━
+        if (commandeOptions?.ms) {
+            await zk.sendMessage(dest, {
+                react: { text: "❌", key: commandeOptions.ms.key }
+            });
+        }
+        if (commandeOptions?.repondre) {
+            await commandeOptions.repondre(`┏━❑ 𝙴𝚁𝚁𝙾𝚁 ━━━━━━━━━
 ┃ ❌ 𝙵𝚊𝚒𝚕𝚎𝚍 𝚝𝚘 𝚍𝚘𝚠𝚗𝚕𝚘𝚊𝚍
 ┗━━━━━━━━━━━━━━━━━━━━
 > © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`);
+        }
     }
 });
