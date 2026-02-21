@@ -1,7 +1,7 @@
 const { silamd } = require("../silamd/sila");
 const conf = require("../set");
 
-// FakevCard sawa na zilizopita
+// FakevCard
 const fkontak = {
     "key": {
         "participant": '0@s.whatsapp.net',
@@ -13,6 +13,9 @@ const fkontak = {
         "conversation": "𝚂𝙸𝙻𝙰"
     }
 };
+
+// Thumbnail
+const OWNER_THUMB = "https://files.catbox.moe/98k75b.jpeg";
 
 // VCard ya owner
 const ownerVcard = (ownerName, ownerNumber) => {
@@ -32,11 +35,11 @@ END:VCARD`;
 
 sila({
     nomCom: 'owner',
-    alias: ['owner', 'creators', 'developer', 'silamd'],
+    alias: ['owner', 'creators', 'developer', 'sila', 'dev', 'mods'],
     reaction: '👑',
-    desc: '𝚂𝚑𝚘𝚠 𝙱𝚘𝚝 𝙾𝚠𝚗𝚎𝚛 𝚒𝚗𝚏𝚘',
+    desc: 'Show Bot Owner info',
     Categorie: 'General',
-    fromMe: 'false'
+    fromMe: 'true'
 },
 async(dest, zk, commandeOptions) => {
 try{
@@ -46,27 +49,28 @@ try{
     const ownerNumber = conf.NUMERO_OWNER || '255789661031';
     const formattedOwnerNumber = ownerNumber.replace(/[^0-9]/g, '');
 
-    // Buttons: Contact, Repo, Channel, Menu
-    const buttons = [
-        { 
-            buttonId: `${prefixe}getbot`, 
-            buttonText: { displayText: "🤖 𝙶𝙴𝚃 𝙱𝙾𝚃" }, 
-            type: 1 
+    // Interactive buttons
+    const interactiveButtons = [
+        {
+            name: 'cta_call',
+            buttonParamsJson: JSON.stringify({
+                display_text: '📞 𝙲𝙰𝙻𝙻 𝙾𝚆𝙽𝙴𝚁',
+                phone_number: formattedOwnerNumber
+            })
         },
-        { 
-            buttonId: `https://github.com/Sila-Md/SILA-MD`, 
-            buttonText: { displayText: "📂 𝙶𝙸𝚃𝙷𝚄𝙱" }, 
-            type: 1 
+        {
+            name: 'cta_url',
+            buttonParamsJson: JSON.stringify({
+                display_text: '🌐 𝙶𝙸𝚃𝙷𝚄𝙱',
+                url: 'https://github.com/Sila-Md'
+            })
         },
-        { 
-            buttonId: `https://whatsapp.com/channel/0029VbBG4gfISTkCpKxyMH02`, 
-            buttonText: { displayText: "📢 𝙲𝙷𝙰𝙽𝙽𝙴𝙻" }, 
-            type: 1 
-        },
-        { 
-            buttonId: `${prefixe}menu`, 
-            buttonText: { displayText: "📋 𝙼𝙴𝙽𝚄" }, 
-            type: 1 
+        {
+            name: 'cta_url',
+            buttonParamsJson: JSON.stringify({
+                display_text: '📢 𝙲𝙷𝙰𝙽𝙽𝙴𝙻',
+                url: 'https://whatsapp.com/channel/0029VbBG4gfISTkCpKxyMH02'
+            })
         }
     ];
 
@@ -80,47 +84,31 @@ try{
         }
     }, { quoted: fkontak });
 
-    // Small delay between messages
+    // Small delay
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-    // Send owner info with buttons and external ad reply
+    // Send owner info with buttons
     const ownerMessage = {
-        image: { url: 'https://files.catbox.moe/36vahk.png' },
-        caption: `┏━❑ 𝙱𝙾𝚃 𝙾𝚆𝙽𝙴𝚁 𝙸𝙽𝙵𝙾 ━━━━━━━━━
+        text: `┏━❑ 𝙾𝚆𝙽𝙴𝚁 𝙸𝙽𝙵𝙾 ━━━━━━━━━
 ┃ 👑 *𝙽𝚊𝚖𝚎:* ${ownerName}
 ┃ 📞 *𝙽𝚞𝚖𝚋𝚎𝚛:* wa.me/${formattedOwnerNumber}
-┃ 
 ┃ 🤖 *𝙱𝚘𝚝:* 𝚂𝙸𝙻𝙰-𝙼𝙳
-┃ ⭐ *𝚅𝚎𝚛𝚜𝚒𝚘𝚗:* 𝚟𝟸.𝟶.𝟶
-┃ 📍 *𝙲𝚘𝚞𝚗𝚝𝚛𝚢:* 𝚃𝚊𝚗𝚣𝚊𝚗𝚒𝚊
-┃ 
-┃ 📢 *𝙲𝚑𝚊𝚗𝚗𝚎𝚕:* @𝚂𝙸𝙻𝙰_𝙼𝙳
-┃ 
-┃ 💬 *𝙰𝚋𝚘𝚞𝚝:*
-┃ 𝙿𝚘𝚠𝚎𝚛𝚏𝚞𝚕 𝚆𝚑𝚊𝚝𝚜𝙰𝚙𝚙 𝙱𝚘𝚝 𝚠𝚒𝚝𝚑 𝙼𝚞𝚕𝚝𝚒-𝙳𝚎𝚟𝚒𝚌𝚎 𝚂𝚞𝚙𝚙𝚘𝚛𝚝. 
-┃ 𝙲𝚛𝚎𝚊𝚝𝚎𝚍 𝚝𝚘 𝚖𝚊𝚔𝚎 𝚢𝚘𝚞𝚛 𝚆𝚑𝚊𝚝𝚜𝙰𝚙𝚙 𝚎𝚡𝚙𝚎𝚛𝚒𝚎𝚗𝚌𝚎 𝚋𝚎𝚝𝚝𝚎𝚛.
+┃ ⭐ *𝚅𝚎𝚛:* 𝚟𝟸.𝟶.𝟶
 ┗━━━━━━━━━━━━━━━━━━━━
 
-𝙲𝚘𝚗𝚝𝚊𝚌𝚝 𝚑𝚊𝚜 𝚋𝚎𝚎𝚗 𝚜𝚎𝚗𝚝! 𝙲𝚑𝚘𝚘𝚜𝚎 𝚊𝚗 𝚘𝚙𝚝𝚒𝚘𝚗 𝚋𝚎𝚕𝚘𝚠:
+𝙲𝚘𝚗𝚝𝚊𝚌𝚝 𝚑𝚊𝚜 𝚋𝚎𝚎𝚗 𝚜𝚎𝚗𝚝!
 > © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`,
         footer: "𝚂𝙸𝙻𝙰-𝙼𝙳 𝙱𝙾𝚃 © 2026",
-        buttons: buttons,
-        headerType: 4,
+        interactiveButtons: interactiveButtons,
+        headerType: 1,
         contextInfo: {
             mentionedJid: [dest],
-            forwardingScore: 999,
-            isForwarded: true,
-            forwardedNewsletterMessageInfo: {
-                newsletterJid: '120363402325089913@newsletter',
-                newsletterName: '© 𝚂𝙸𝙻𝙰 𝙼𝙳',
-                serverMessageId: 143,
-            },
             externalAdReply: {
-                title: `👑 𝙱𝙾𝚃 𝙾𝚆𝙽𝙴𝚁: ${ownerName}`,
+                title: `👑 𝙾𝚠𝚗𝚎𝚛: ${ownerName}`,
                 body: `📞 wa.me/${formattedOwnerNumber}`,
                 mediaType: 1,
                 previewType: 0,
-                thumbnailUrl: 'https://files.catbox.moe/36vahk.png',
+                thumbnailUrl: OWNER_THUMB,
                 sourceUrl: `https://wa.me/${formattedOwnerNumber}`,
                 renderLargerThumbnail: false,
             }
