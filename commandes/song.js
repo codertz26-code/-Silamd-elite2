@@ -45,9 +45,62 @@ const formatViews = (views) => {
     return views.toString();
 };
 
+// Function to download audio
+const downloadAudio = async (videoUrl, title, author, thumbnail) => {
+    try {
+        const fallbackApi = `https://yt-dl.officialhectormanuel.workers.dev/?url=${encodeURIComponent(videoUrl)}`;
+        const response = await axios.get(fallbackApi, { timeout: 30000 });
+        const data = response.data;
+        
+        if (data?.status && data.audio) {
+            return {
+                success: true,
+                url: data.audio,
+                title,
+                author,
+                thumbnail
+            };
+        }
+        return { success: false, error: 'No audio URL found' };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+};
+
+// Function to download video (using new API)
+const downloadVideo = async (videoUrl, title, author, thumbnail) => {
+    try {
+        // New video API
+        const api = `https://gtech-api-xtp1.onrender.com/api/video/yt?apikey=APIKEY&url=${encodeURIComponent(videoUrl)}`;
+        const response = await axios.get(api, { timeout: 30000 });
+        const data = response.data;
+        
+        if (data?.result?.video) {
+            return {
+                success: true,
+                url: data.result.video,
+                title,
+                author,
+                thumbnail
+            };
+        } else if (data?.video) {
+            return {
+                success: true,
+                url: data.video,
+                title,
+                author,
+                thumbnail
+            };
+        }
+        return { success: false, error: 'No video URL found' };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+};
+
 silamd({
     nomCom: 'song',
-    alias: ['song', 'video', 'music', 'play', 'ytmp3', 'audio'],
+    alias: ['song', 'mp3', 'music', 'play', 'ytmp3', 'ytmp4', 'video', 'yt', 'ytaudio', 'ytvideo', 'download', 'dl', 'audio', 'mp4', 'song2', 'music2', 'play2'],
     reaction: '🎵',
     desc: 'Download song/video with multiple formats',
     Categorie: 'download',
@@ -61,9 +114,9 @@ async (dest, zk, commandeOptions) => {
         if (!q) {
             return await repondre(`┏━❑ 𝙷𝙾𝚆 𝚃𝙾 𝚄𝚂𝙴 ━━━━━━━━━
 ┃ ✦ ${prefixe}song shape of you
-┃ ✦ ${prefixe}video https://youtube.com/...
+┃ ✦ ${prefixe}song https://youtube.com/...
 ┃ 
-┃ 💡 *Aliases:* video, music, play, ytmp3
+┃ 💡 *Aliases:* mp3, music, play, video, ytmp4
 ┗━━━━━━━━━━━━━━━━━━━━
 > © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`);
         }
@@ -73,7 +126,7 @@ async (dest, zk, commandeOptions) => {
             react: { text: "🔍", key: ms.key }
         });
 
-        // SIMPLE SEARCH MESSAGE - ONE WORD (replied to command)
+        // Simple search message
         await repondre(`𝚂𝙸𝙻𝙰 𝙸𝚂 𝚂𝙴𝙰𝚁𝙲𝙷𝙸𝙽𝙶 🔎`);
 
         let videoData = null;
@@ -162,7 +215,7 @@ async (dest, zk, commandeOptions) => {
         ];
 
         // Create caption with song info
-        const caption = `┏━❑ 𝚂𝙾𝙽𝙶𝟸 𝙸𝙽𝙵𝙾 ━━━━━━━━━
+        const caption = `┏━❑ 𝚂𝙾𝙽𝙶 𝙸𝙽𝙵𝙾 ━━━━━━━━━
 ┃ 🎵 *𝚃𝚒𝚝𝚕𝚎:* ${title.substring(0, 40)}${title.length > 40 ? '...' : ''}
 ┃ 👤 *𝙰𝚛𝚝𝚒𝚜𝚝:* ${author.substring(0, 30)}${author.length > 30 ? '...' : ''}
 ┃ ⏱️ *𝙳𝚞𝚛𝚊𝚝𝚒𝚘𝚗:* ${duration}
@@ -203,7 +256,7 @@ async (dest, zk, commandeOptions) => {
         });
 
     } catch (e) {
-        console.log("❌ Song2 Command Error: " + e);
+        console.log("❌ Song Command Error: " + e);
         await zk.sendMessage(dest, {
             react: { text: "❌", key: ms.key }
         });
@@ -219,7 +272,7 @@ async (dest, zk, commandeOptions) => {
 // ============================================
 silamd({
     nomCom: 'audiostream',
-    alias: ['audiomp3'],
+    alias: ['audiomp3', 'audiostream', 'audio'],
     reaction: '🎵',
     desc: 'Handle audio stream button',
     Categorie: 'download',
@@ -244,19 +297,17 @@ async (dest, zk, commandeOptions) => {
         const author = Buffer.from(encodedAuthor, 'base64').toString('utf-8');
         const thumbnail = Buffer.from(encodedThumb, 'base64').toString('utf-8');
 
-        // ONLY REACTION - NO MESSAGE
+        // Download reaction
         await zk.sendMessage(dest, {
             react: { text: "⬇️", key: ms.key }
         });
 
-        // Download and send as audio stream
-        const fallbackApi = `https://yt-dl.officialhectormanuel.workers.dev/?url=${encodeURIComponent(videoUrl)}`;
-        const fallbackResponse = await axios.get(fallbackApi, { timeout: 30000 });
-        const fallbackData = fallbackResponse.data;
+        // Download audio
+        const result = await downloadAudio(videoUrl, title, author, thumbnail);
 
-        if (fallbackData?.status && fallbackData.audio) {
+        if (result.success) {
             await zk.sendMessage(dest, {
-                audio: { url: fallbackData.audio },
+                audio: { url: result.url },
                 mimetype: "audio/mpeg",
                 fileName: `${title.substring(0, 50).replace(/[^\w\s]/gi, '')}.mp3`,
                 contextInfo: {
@@ -272,13 +323,12 @@ async (dest, zk, commandeOptions) => {
                 }
             }, { quoted: fkontak });
 
-            // SUCCESS REACTION
+            // Success reaction
             await zk.sendMessage(dest, {
                 react: { text: "✅", key: ms.key }
             });
-
         } else {
-            throw new Error('No audio URL found');
+            throw new Error(result.error);
         }
 
     } catch (e) {
@@ -292,11 +342,11 @@ async (dest, zk, commandeOptions) => {
 });
 
 // ============================================
-// VIDEO STREAM BUTTON HANDLER (MP4)
+// VIDEO STREAM BUTTON HANDLER (MP4) - Using new API
 // ============================================
 silamd({
     nomCom: 'videostream',
-    alias: ['videomp4'],
+    alias: ['videomp4', 'videostream', 'video', 'mp4'],
     reaction: '🎬',
     desc: 'Handle video stream button',
     Categorie: 'download',
@@ -321,19 +371,17 @@ async (dest, zk, commandeOptions) => {
         const author = Buffer.from(encodedAuthor, 'base64').toString('utf-8');
         const thumbnail = Buffer.from(encodedThumb, 'base64').toString('utf-8');
 
-        // ONLY REACTION - NO MESSAGE
+        // Download reaction
         await zk.sendMessage(dest, {
             react: { text: "⬇️", key: ms.key }
         });
 
-        // Download and send as video stream
-        const fallbackApi = `https://yt-dl.officialhectormanuel.workers.dev/?url=${encodeURIComponent(videoUrl)}`;
-        const fallbackResponse = await axios.get(fallbackApi, { timeout: 30000 });
-        const fallbackData = fallbackResponse.data;
+        // Download video using new API
+        const result = await downloadVideo(videoUrl, title, author, thumbnail);
 
-        if (fallbackData?.status && fallbackData.video) {
+        if (result.success) {
             await zk.sendMessage(dest, {
-                video: { url: fallbackData.video },
+                video: { url: result.url },
                 mimetype: "video/mp4",
                 caption: `┏━❑ 𝚅𝙸𝙳𝙴𝙾 𝙳𝙾𝚆𝙽𝙻𝙾𝙰𝙳𝙴𝙳 ━━━━━━━━━
 ┃ 🎬 *${title.substring(0, 40)}${title.length > 40 ? '...' : ''}*
@@ -351,13 +399,12 @@ async (dest, zk, commandeOptions) => {
                 }
             }, { quoted: fkontak });
 
-            // SUCCESS REACTION
+            // Success reaction
             await zk.sendMessage(dest, {
                 react: { text: "✅", key: ms.key }
             });
-
         } else {
-            throw new Error('No video URL found');
+            throw new Error(result.error);
         }
 
     } catch (e) {
@@ -375,7 +422,7 @@ async (dest, zk, commandeOptions) => {
 // ============================================
 silamd({
     nomCom: 'audiodoc',
-    alias: ['audiodocument'],
+    alias: ['audiodocument', 'audiodoc', 'adoc'],
     reaction: '📄',
     desc: 'Handle audio document button',
     Categorie: 'download',
@@ -400,19 +447,17 @@ async (dest, zk, commandeOptions) => {
         const author = Buffer.from(encodedAuthor, 'base64').toString('utf-8');
         const thumbnail = Buffer.from(encodedThumb, 'base64').toString('utf-8');
 
-        // ONLY REACTION - NO MESSAGE
+        // Download reaction
         await zk.sendMessage(dest, {
             react: { text: "⬇️", key: ms.key }
         });
 
-        // Download and send as document
-        const fallbackApi = `https://yt-dl.officialhectormanuel.workers.dev/?url=${encodeURIComponent(videoUrl)}`;
-        const fallbackResponse = await axios.get(fallbackApi, { timeout: 30000 });
-        const fallbackData = fallbackResponse.data;
+        // Download audio
+        const result = await downloadAudio(videoUrl, title, author, thumbnail);
 
-        if (fallbackData?.status && fallbackData.audio) {
+        if (result.success) {
             await zk.sendMessage(dest, {
-                document: { url: fallbackData.audio },
+                document: { url: result.url },
                 mimetype: "audio/mpeg",
                 fileName: `${title.substring(0, 50).replace(/[^\w\s]/gi, '')}.mp3`,
                 contextInfo: {
@@ -428,13 +473,12 @@ async (dest, zk, commandeOptions) => {
                 }
             }, { quoted: fkontak });
 
-            // SUCCESS REACTION
+            // Success reaction
             await zk.sendMessage(dest, {
                 react: { text: "✅", key: ms.key }
             });
-
         } else {
-            throw new Error('No audio URL found');
+            throw new Error(result.error);
         }
 
     } catch (e) {
@@ -452,7 +496,7 @@ async (dest, zk, commandeOptions) => {
 // ============================================
 silamd({
     nomCom: 'videodoc',
-    alias: ['videodocument'],
+    alias: ['videodocument', 'videodoc', 'vdoc'],
     reaction: '📁',
     desc: 'Handle video document button',
     Categorie: 'download',
@@ -477,19 +521,17 @@ async (dest, zk, commandeOptions) => {
         const author = Buffer.from(encodedAuthor, 'base64').toString('utf-8');
         const thumbnail = Buffer.from(encodedThumb, 'base64').toString('utf-8');
 
-        // ONLY REACTION - NO MESSAGE
+        // Download reaction
         await zk.sendMessage(dest, {
             react: { text: "⬇️", key: ms.key }
         });
 
-        // Download and send as document
-        const fallbackApi = `https://yt-dl.officialhectormanuel.workers.dev/?url=${encodeURIComponent(videoUrl)}`;
-        const fallbackResponse = await axios.get(fallbackApi, { timeout: 30000 });
-        const fallbackData = fallbackResponse.data;
+        // Download video using new API
+        const result = await downloadVideo(videoUrl, title, author, thumbnail);
 
-        if (fallbackData?.status && fallbackData.video) {
+        if (result.success) {
             await zk.sendMessage(dest, {
-                document: { url: fallbackData.video },
+                document: { url: result.url },
                 mimetype: "video/mp4",
                 fileName: `${title.substring(0, 50).replace(/[^\w\s]/gi, '')}.mp4`,
                 caption: `┏━❑ 𝚅𝙸𝙳𝙴𝙾 𝙳𝙾𝙲𝚄𝙼𝙴𝙽𝚃 ━━━━━━━━━
@@ -508,13 +550,12 @@ async (dest, zk, commandeOptions) => {
                 }
             }, { quoted: fkontak });
 
-            // SUCCESS REACTION
+            // Success reaction
             await zk.sendMessage(dest, {
                 react: { text: "✅", key: ms.key }
             });
-
         } else {
-            throw new Error('No video URL found');
+            throw new Error(result.error);
         }
 
     } catch (e) {
