@@ -1,6 +1,7 @@
-const { silamd } = require("../silamd/sila");
+const { sila } = require("../silamd/sila");
+const axios = require('axios');
 
-// FakevCard sawa na zilizopita
+// FakevCard
 const fkontak = {
     "key": {
         "participant": '0@s.whatsapp.net',
@@ -13,100 +14,156 @@ const fkontak = {
     }
 };
 
-sila({
+const thumbImage = "https://files.catbox.moe/98k75b.jpeg";
+
+sila({ 
     nomCom: 'getbot',
-    alias: ['getbot', 'bot', 'script', 'repo', 'deploy'],
+    alias: ['getbot', 'pair', 'pairing', 'getpair', 'paircode', 'code', 'gencode', 'generate', 'session', 'getsession', 'bot'],
     reaction: '🤖',
-    desc: '𝙶𝚎𝚝 𝚂𝙸𝙻𝙰-𝙼𝙳 𝙱𝚘𝚝 𝚕𝚒𝚗𝚔𝚜',
+    desc: 'Get bot pairing code',
     Categorie: 'General',
-    fromMe: 'false'
+    fromMe: 'true'
 },
-async(dest, zk, commandeOptions) => {
-try{
-    const { ms, repondre, prefixe, nomAuteurMessage } = commandeOptions;
-
-    // Button 1: Repo GitHub
-    // Button 2: Channel
-    // Button 3: Group
-    // Button 4: Menu
-    const buttons = [
-        { 
-            buttonId: `https://github.com/Sila-Md/SILA-MD`, 
-            buttonText: { displayText: "📂 𝙶𝙸𝚃𝙷𝚄𝙱 𝚁𝙴𝙿𝙾" }, 
-            type: 1 
-        },
-        { 
-            buttonId: `https://whatsapp.com/channel/0029VbBG4gfISTkCpKxyMH02`, 
-            buttonText: { displayText: "📢 𝙾𝙵𝙵𝙸𝙲𝙸𝙰𝙻 𝙲𝙷𝙰𝙽𝙽𝙴𝙻" }, 
-            type: 1 
-        },
-        { 
-            buttonId: `https://chat.whatsapp.com/IdGNaKt80DEBqirc2ek4ks`, 
-            buttonText: { displayText: "👥 𝚂𝚄𝙿𝙿𝙾𝚁𝚃 𝙶𝚁𝙾𝚄𝙿" }, 
-            type: 1 
-        },
-        { 
-            buttonId: `${prefixe}menu`, 
-            buttonText: { displayText: "📋 𝙼𝙰𝙸𝙽 𝙼𝙴𝙽𝚄" }, 
-            type: 1 
-        }
-    ];
-
-    const buttonMessage = {
-        image: { url: 'https://files.catbox.moe/36vahk.png' }, // Tumia picha yako ya menu
-        caption: `┏━❑ 𝙶𝙴𝚃 𝚂𝙸𝙻𝙰-𝙼𝙳 𝙱𝙾𝚃 ━━━━━━━━━
-┃ 🤖 *𝙱𝚘𝚝 𝙽𝚊𝚖𝚎:* 𝚂𝙸𝙻𝙰-𝙼𝙳
-┃ 
-┃ 📢 *𝚃𝚑𝚎 𝚄𝚕𝚝𝚒𝚖𝚊𝚝𝚎 𝚆𝚑𝚊𝚝𝚜𝙰𝚙𝚙 𝙴𝚡𝚙𝚎𝚛𝚒𝚎𝚗𝚌𝚎*
-┃ 
-┃ ✨ *𝙵𝚎𝚊𝚝𝚞𝚛𝚎𝚜:* 
-┃    • 🤖 𝙰𝙸 𝙲𝚑𝚊𝚝𝚋𝚘𝚝 (𝙶𝙿𝚃-𝟻)
-┃    • 📥 𝙼𝚎𝚍𝚒𝚊 𝙳𝚘𝚠𝚗𝚕𝚘𝚊𝚍𝚎𝚛
-┃    • 👥 𝙶𝚛𝚘𝚞𝚙 𝙼𝚊𝚗𝚊𝚐𝚎𝚖𝚎𝚗𝚝
-┃    • 🔒 𝙰𝚗𝚝𝚒-𝚕𝚒𝚗𝚔 / 𝙰𝚗𝚝𝚒-𝚋𝚘𝚝
-┃    • 🎮 𝙶𝚊𝚖𝚎𝚜 & 𝙵𝚞𝚗
-┃ 
-┃ 📊 *𝚃𝚎𝚌𝚑 𝚂𝚝𝚊𝚌𝚔:*
-┃    • 𝙹𝚊𝚟𝚊𝚂𝚌𝚛𝚒𝚙𝚝 𝟿𝟺%
-┃    • 𝙱𝚊𝚒𝚕𝚎𝚢𝚜 𝙼𝙳
-┃    • 𝙼𝚞𝚕𝚝𝚒-𝙳𝚎𝚟𝚒𝚌𝚎 𝚂𝚞𝚙𝚙𝚘𝚛𝚝
-┃ 
-┃ ⭐ *𝚂𝚝𝚊𝚛 𝚝𝚑𝚎 𝚛𝚎𝚙𝚘 𝚒𝚏 𝚢𝚘𝚞 𝚕𝚒𝚔𝚎 𝚝𝚑𝚒𝚜 𝚋𝚘𝚝!*
+async (dest, zk, commandeOptions) => {
+    try {
+        const { ms, arg, repondre, prefixe, nomAuteurMessage } = commandeOptions;
+        
+        // Get sender number
+        const senderNumber = nomAuteurMessage.split('@')[0];
+        let targetNumber = senderNumber;
+        
+        // If user provided a number, use that instead
+        if (arg[0]) {
+            targetNumber = arg.join("").replace(/\D/g, '');
+            if (targetNumber.length < 10) {
+                return await repondre(`┏━❑ 𝙴𝚁𝚁𝙾𝚁 ━━━━━━━━━
+┃ ❌ 𝙸𝚗𝚟𝚊𝚕𝚒𝚍 𝚗𝚞𝚖𝚋𝚎𝚛
+┃ 📱 𝚄𝚜𝚎: ${prefixe}getbot 255XXXXXXXXX
 ┗━━━━━━━━━━━━━━━━━━━━
-
-𝙲𝚑𝚘𝚘𝚜𝚎 𝚊𝚗 𝚘𝚙𝚝𝚒𝚘𝚗 𝚋𝚎𝚕𝚘𝚠:
-> © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`,
-        footer: "𝚂𝙸𝙻𝙰-𝙼𝙳 𝙱𝙾𝚃 © 2026",
-        buttons: buttons,
-        headerType: 4,
-        contextInfo: {
-            mentionedJid: [dest],
-            forwardingScore: 999,
-            isForwarded: true,
-            forwardedNewsletterMessageInfo: {
-                newsletterJid: '120363402325089913@newsletter',
-                newsletterName: '© 𝚂𝙸𝙻𝙰 𝙼𝙳',
-                serverMessageId: 143,
-            },
-            externalAdReply: {
-                title: `🤖 𝙶𝚎𝚝 𝚂𝙸𝙻𝙰-𝙼𝙳 𝙱𝙾𝚃`,
-                body: `⭐ 38 𝚜𝚝𝚊𝚛𝚜 | 𝟼𝟶 𝚏𝚘𝚛𝚔𝚜`,
-                mediaType: 1,
-                previewType: 0,
-                thumbnailUrl: 'https://files.catbox.moe/36vahk.png',
-                sourceUrl: 'https://github.com/Sila-Md/SILA-MD',
-                renderLargerThumbnail: false,
+> © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`);
             }
         }
-    };
 
-    await zk.sendMessage(dest, buttonMessage, { quoted: fkontak });
+        // Send reaction
+        await zk.sendMessage(dest, {
+            react: { text: "🔄", key: ms.key }
+        });
 
-} catch (e) {
-    console.log("❌ Getbot Command Error: " + e);
-    await repondre(`┏━❑ 𝙴𝚁𝚁𝙾𝚁 ━━━━━━━━━
+        // Send processing message (SILENT - no reply)
+        await zk.sendMessage(dest, {
+            text: `┏━❑ 𝙶𝙴𝙽𝙴𝚁𝙰𝚃𝙸𝙽𝙶 ━━━━━━━━━
+┃ 🤖 𝙶𝚎𝚝𝚝𝚒𝚗𝚐 𝚢𝚘𝚞𝚛 𝚙𝚊𝚒𝚛𝚒𝚗𝚐 𝚌𝚘𝚍𝚎...
+┃ 📱 𝙽𝚞𝚖𝚋𝚎𝚛: ${targetNumber}
+┗━━━━━━━━━━━━━━━━━━━━`,
+            contextInfo: {
+                externalAdReply: {
+                    title: `🤖 𝙿𝚊𝚒𝚛𝚒𝚗𝚐 𝙲𝚘𝚍𝚎`,
+                    body: `📱 ${targetNumber}`,
+                    mediaType: 1,
+                    previewType: 0,
+                    thumbnailUrl: thumbImage,
+                    renderLargerThumbnail: false,
+                }
+            }
+        }, { quoted: fkontak });
+
+        // Call pairing API
+        try {
+            const apiUrl = `https://simba2.onrender.com/code?number=${targetNumber}`;
+            const response = await axios.get(apiUrl, { timeout: 30000 });
+
+            if (!response.data || !response.data.code) {
+                throw new Error('No pairing code received');
+            }
+
+            const pairCode = response.data.code;
+
+            // BUTTON YA KOPI CODE
+            const interactiveButtons = [
+                {
+                    name: 'cta_copy',
+                    buttonParamsJson: JSON.stringify({
+                        display_text: '📋 𝙲𝙾𝙿𝚈 𝙲𝙾𝙳𝙴',
+                        copy_code: pairCode
+                    })
+                }
+            ];
+
+            // Send code with copy button (NO INSTRUCTIONS)
+            await zk.sendMessage(dest, {
+                text: `┏━❑ 𝙿𝙰𝙸𝚁𝙸𝙽𝙶 𝙲𝙾𝙳𝙴 ━━━━━━━━━
+┃ ✅ *𝙲𝚘𝚍𝚎 𝚐𝚎𝚗𝚎𝚛𝚊𝚝𝚎𝚍*
+┃ 
+┃ 📋 *${pairCode}*
+┗━━━━━━━━━━━━━━━━━━━━`,
+                footer: "𝚂𝙸𝙻𝙰-𝙼𝙳 𝙱𝙾𝚃 © 2026",
+                interactiveButtons: interactiveButtons,
+                headerType: 1,
+                contextInfo: {
+                    externalAdReply: {
+                        title: `📋 𝙲𝚕𝚒𝚌𝚔 𝚝𝚘 𝙲𝚘𝚙𝚢`,
+                        body: pairCode,
+                        mediaType: 1,
+                        previewType: 0,
+                        thumbnailUrl: thumbImage,
+                        renderLargerThumbnail: false,
+                    }
+                }
+            }, { quoted: fkontak });
+
+            // Also send as plain text for manual copying
+            await zk.sendMessage(dest, {
+                text: `📋 ${pairCode}`,
+                contextInfo: {
+                    externalAdReply: {
+                        title: `📋 𝙲𝚘𝚍𝚎`,
+                        body: pairCode,
+                        mediaType: 1,
+                        previewType: 0,
+                        thumbnailUrl: thumbImage,
+                        renderLargerThumbnail: false,
+                    }
+                }
+            }, { quoted: fkontak });
+
+            // Success reaction
+            await zk.sendMessage(dest, {
+                react: { text: "✅", key: ms.key }
+            });
+
+        } catch (apiError) {
+            console.error("Pairing API Error:", apiError.message);
+            
+            await zk.sendMessage(dest, {
+                text: `┏━❑ 𝙴𝚁𝚁𝙾𝚁 ━━━━━━━━━
+┃ ❌ 𝙵𝚊𝚒𝚕𝚎𝚍 𝚝𝚘 𝚐𝚎𝚝 𝚌𝚘𝚍𝚎
+┃ 📋 ${apiError.message}
+┗━━━━━━━━━━━━━━━━━━━━`,
+                contextInfo: {
+                    externalAdReply: {
+                        title: `❌ 𝙴𝚛𝚛𝚘𝚛`,
+                        body: apiError.message,
+                        mediaType: 1,
+                        previewType: 0,
+                        thumbnailUrl: thumbImage,
+                        renderLargerThumbnail: false,
+                    }
+                }
+            }, { quoted: fkontak });
+
+            await zk.sendMessage(dest, {
+                react: { text: "❌", key: ms.key }
+            });
+        }
+
+    } catch (e) {
+        console.log("❌ Getbot Error: " + e);
+        await zk.sendMessage(dest, {
+            react: { text: "❌", key: ms.key }
+        });
+        await repondre(`┏━❑ 𝙴𝚁𝚁𝙾𝚁 ━━━━━━━━━
 ┃ ❌ ${e.message}
 ┗━━━━━━━━━━━━━━━━━━━━
 > © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`);
-}
+    }
 });
