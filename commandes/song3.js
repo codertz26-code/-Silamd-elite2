@@ -60,8 +60,8 @@ const formatViews = (views) => {
 };
 
 silamd({
-    nomCom: 'song3',
-    alias: ['song3', 'mp3', 'music3', 'play3', 'ytmp33', 'audio3'],
+    nomCom: 'song2',
+    alias: ['song2', 'mp3', 'music3', 'play2', 'ytmp33', 'audio2'],
     reaction: '🎵',
     desc: 'Download song with cover art',
     Categorie: 'download',
@@ -77,7 +77,7 @@ try{
 ┃ ✦ ${prefixe}song3 shape of you
 ┃ ✦ ${prefixe}song3 https://youtube.com/...
 ┃ 
-┃ 💡 *Aliases:* mp3, music3, play3, ytmp33
+┃ 💡 *Aliases:* mp3, music3, play2, ytmp33
 ┗━━━━━━━━━━━━━━━━━━━━
 > © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`);
     }
