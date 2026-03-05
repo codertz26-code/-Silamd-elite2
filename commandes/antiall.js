@@ -37,16 +37,16 @@ silamd({
 },
 async (dest, zk, commandeOptions) => {
     try {
-        const { ms, repondre, args, verifGroupe, verifAdmin, prefixe } = commandeOptions;
+        const { ms, repondre, args, verifGroupe, verifAdmin, superUser, prefixe } = commandeOptions;
 
         // Check if in group
         if (!verifGroupe) {
             return repondre('┏━❑ 𝙴𝚁𝚁𝙾𝚁 ━━━━━━━━━\n┃ ❌ This command can only be used in groups!\n┗━━━━━━━━━━━━━━━━━━━━');
         }
 
-        // Check if user is admin
-        if (!verifAdmin) {
-            return repondre('┏━❑ 𝙴𝚁𝚁𝙾𝚁 ━━━━━━━━━\n┃ ❌ Only group admins can use this command!\n┗━━━━━━━━━━━━━━━━━━━━');
+        // Allow if superUser OR admin
+        if (!superUser && !verifAdmin) {
+            return repondre('┏━❑ 𝙴𝚁𝚁𝙾𝚁 ━━━━━━━━━\n┃ ❌ Only group admins and owners can use this command!\n┗━━━━━━━━━━━━━━━━━━━━');
         }
 
         const action = args[0] ? args[0].toLowerCase() : '';
@@ -63,7 +63,6 @@ async (dest, zk, commandeOptions) => {
 ┃ • Anti-Media
 ┃ • Anti-Spam
 ┃ • Anti-Bug
-┃ • Anti-Link
 ┗━━━━━━━━━━━━━━━━━━━━
 > © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`);
         }
@@ -78,19 +77,15 @@ async (dest, zk, commandeOptions) => {
 
         // Handle status check
         if (action === 'status') {
-            const status = allSettings[groupId].antiall ? '🟢 ENABLED' : '🔴 DISABLED';
             let features = '';
-            
-            // Check each feature
             features += `\n┃ • Anti-Tag: ${allSettings[groupId].antitag ? '✅' : '❌'}`;
             features += `\n┃ • Anti-Media: ${allSettings[groupId].antimedia ? '✅' : '❌'}`;
             features += `\n┃ • Anti-Spam: ${allSettings[groupId].antispam ? '✅' : '❌'}`;
             features += `\n┃ • Anti-Bug: ${allSettings[groupId].antibug ? '✅' : '❌'}`;
             
             return repondre(`┏━❑ 𝙰𝙽𝚃𝙸𝙰𝙻𝙻 𝚂𝚃𝙰𝚃𝚄𝚂 ━━━━━━━━━
-┃ 📊 *Master Switch:* ${status}
 ┃ 📁 *Group:* ${groupId}
-┃ 📋 *Individual Features:${features}
+┃ 📋 *Features:${features}
 ┃ 
 ┃ 📝 *Use ${prefixe}antiall on/off to toggle all*
 ┗━━━━━━━━━━━━━━━━━━━━
@@ -105,7 +100,6 @@ async (dest, zk, commandeOptions) => {
         allSettings[groupId].antimedia = newStatus;
         allSettings[groupId].antispam = newStatus;
         allSettings[groupId].antibug = newStatus;
-        allSettings[groupId].antiall = newStatus;
         
         saveAntiFeatures(allSettings);
 
