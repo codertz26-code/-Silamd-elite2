@@ -208,215 +208,6 @@ setTimeout(() => {
         loadAntiFeatures();
 
         // ============================================
-        // 📌 ANTI-FEATURES HANDLER FUNCTIONS
-        // ============================================
-        
-        // Anti-tag handler
-        const handleAntiTag = async (groupId, sender, isAdmin, msg) => {
-            try {
-                const settings = antiFeatures.groups.get(groupId) || {};
-                if (!settings.antitag || isAdmin) return false;
-
-                const hasMentions = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid?.length > 0 ||
-                                   msg.message?.imageMessage?.contextInfo?.mentionedJid?.length > 0 ||
-                                   msg.message?.videoMessage?.contextInfo?.mentionedJid?.length > 0;
-                
-                if (hasMentions) {
-                    await zk.sendMessage(groupId, {
-                        delete: {
-                            remoteJid: groupId,
-                            fromMe: false,
-                            id: msg.key.id,
-                            participant: sender
-                        }
-                    });
-                    return true;
-                }
-            } catch (e) {
-                console.log('AntiTag Error:', e);
-            }
-            return false;
-        };
-
-        // Anti-media handler
-        const handleAntiMedia = async (groupId, sender, isAdmin, msg) => {
-            try {
-                const settings = antiFeatures.groups.get(groupId) || {};
-                if (!settings.antimedia || isAdmin) return false;
-
-                const hasMedia = msg.message?.imageMessage ||
-                               msg.message?.videoMessage ||
-                               msg.message?.audioMessage ||
-                               msg.message?.documentMessage ||
-                               msg.message?.stickerMessage;
-                
-                if (hasMedia) {
-                    await zk.sendMessage(groupId, {
-                        delete: {
-                            remoteJid: groupId,
-                            fromMe: false,
-                            id: msg.key.id,
-                            participant: sender
-                        }
-                    });
-                    return true;
-                }
-            } catch (e) {
-                console.log('AntiMedia Error:', e);
-            }
-            return false;
-        };
-
-        // Anti-spam handler
-        const handleAntiSpam = async (groupId, sender, isAdmin, msg) => {
-            try {
-                const settings = antiFeatures.groups.get(groupId) || {};
-                if (!settings.antispam || isAdmin) return false;
-
-                const now = Date.now();
-                const userKey = `${groupId}:${sender}`;
-                
-                if (!antiFeatures.spamTracker.has(userKey)) {
-                    antiFeatures.spamTracker.set(userKey, {
-                        count: 1,
-                        lastMsg: now,
-                        timer: setTimeout(() => antiFeatures.spamTracker.delete(userKey), 5000)
-                    });
-                    return false;
-                }
-
-                const userData = antiFeatures.spamTracker.get(userKey);
-                
-                if (now - userData.lastMsg > 5000) {
-                    clearTimeout(userData.timer);
-                    antiFeatures.spamTracker.set(userKey, {
-                        count: 1,
-                        lastMsg: now,
-                        timer: setTimeout(() => antiFeatures.spamTracker.delete(userKey), 5000)
-                    });
-                    return false;
-                }
-
-                userData.count++;
-                userData.lastMsg = now;
-
-                if (userData.count > 5) {
-                    await zk.sendMessage(groupId, {
-                        delete: {
-                            remoteJid: groupId,
-                            fromMe: false,
-                            id: msg.key.id,
-                            participant: sender
-                        }
-                    });
-
-                    await zk.sendMessage(groupId, {
-                        text: `⚠️ @${sender.split('@')[0]} *𝙰𝙽𝚃𝙸-𝚂𝙿𝙰𝙼*\n𝙿𝚕𝚎𝚊𝚜𝚎 𝚍𝚘𝚗'𝚝 𝚜𝚙𝚊𝚖!`,
-                        mentions: [sender]
-                    });
-                    return true;
-                }
-            } catch (e) {
-                console.log('AntiSpam Error:', e);
-            }
-            return false;
-        };
-
-        // Anti-bug handler
-        const handleAntiBug = async (groupId, sender, isAdmin, msg) => {
-            try {
-                const settings = antiFeatures.groups.get(groupId) || {};
-                if (!settings.antibug || isAdmin) return false;
-
-                const isBugMessage = 
-                    msg.message?.protocolMessage ||
-                    msg.message?.reactionMessage ||
-                    msg.message?.pollCreationMessage ||
-                    msg.message?.pollUpdateMessage ||
-                    msg.message?.paymentMessage ||
-                    msg.message?.orderMessage;
-
-                if (isBugMessage) {
-                    await zk.sendMessage(groupId, {
-                        delete: {
-                            remoteJid: groupId,
-                            fromMe: false,
-                            id: msg.key.id,
-                            participant: sender
-                        }
-                    });
-                    return true;
-                }
-            } catch (e) {
-                console.log('AntiBug Error:', e);
-            }
-            return false;
-        };
-
-        // Anti-link handler
-        const handleAntiLink = async (groupId, sender, isAdmin, msg, texte) => {
-            try {
-                const antilinkSettings = (() => {
-                    try {
-                        const data = fs.readFileSync('./database/antilink.json', 'utf8');
-                        return JSON.parse(data);
-                    } catch {
-                        return {};
-                    }
-                })();
-
-                const antilinkEnabled = antilinkSettings[groupId]?.enabled || false;
-                const antilinkAction = antilinkSettings[groupId]?.action || 'delete';
-                
-                if (!antilinkEnabled || isAdmin || !texte) return false;
-
-                const linkRegex = /(https?:\/\/[^\s]+)|(chat\.whatsapp\.com\/[^\s]+)|(wa\.me\/[^\s]+)/gi;
-                if (linkRegex.test(texte)) {
-                    const key = {
-                        remoteJid: groupId,
-                        fromMe: false,
-                        id: msg.key.id,
-                        participant: sender
-                    };
-
-                    if (antilinkAction === 'delete') {
-                        await zk.sendMessage(groupId, {
-                            text: `┏━❑ 𝙰𝙽𝚃𝙸𝙻𝙸𝙽𝙺 ━━━━━━━━━\n┃ 🔗 @${sender.split('@')[0]}\n┃ ❌ Link deleted!\n┗━━━━━━━━━━━━━━━━━━━━`,
-                            mentions: [sender]
-                        });
-                        await zk.sendMessage(groupId, { delete: key });
-                        return true;
-
-                    } else if (antilinkAction === 'warn') {
-                        const warnKey = `${groupId}:${sender}`;
-                        const warns = antiFeatures.warnTracker.get(warnKey) || 0;
-                        const newWarns = warns + 1;
-                        antiFeatures.warnTracker.set(warnKey, newWarns);
-
-                        if (newWarns >= 3) {
-                            await zk.groupParticipantsUpdate(groupId, [sender], "remove");
-                            antiFeatures.warnTracker.delete(warnKey);
-                            await zk.sendMessage(groupId, {
-                                text: `┏━❑ 𝙰𝙽𝚃𝙸𝙻𝙸𝙽𝙺 ━━━━━━━━━\n┃ 🔗 @${sender.split('@')[0]}\n┃ 🚫 Removed (3/3 warns)\n┗━━━━━━━━━━━━━━━━━━━━`,
-                                mentions: [sender]
-                            });
-                        } else {
-                            await zk.sendMessage(groupId, {
-                                text: `┏━❑ 𝙰𝙽𝚃𝙸𝙻𝙸𝙽𝙺 ━━━━━━━━━\n┃ 🔗 @${sender.split('@')[0]}\n┃ ⚠️ Warn ${newWarns}/3\n┗━━━━━━━━━━━━━━━━━━━━`,
-                                mentions: [sender]
-                            });
-                        }
-                        await zk.sendMessage(groupId, { delete: key });
-                        return true;
-                    }
-                }
-            } catch (e) {
-                console.log('Anti-link error:', e);
-            }
-            return false;
-        };
-
-        // ============================================
         // 📌 MAIN MESSAGE HANDLER
         // ============================================
         zk.ev.on("messages.upsert", async (m) => {
@@ -483,6 +274,9 @@ setTimeout(() => {
             const superUser = allAllowedNumbers.includes(auteurMessage);
             var dev = [dj, dj2, dj3, luffy].map((t) => t.replace(/[^0-9]/g) + "@s.whatsapp.net").includes(auteurMessage);
 
+            // ============================================
+            // 📌 DEFINE REPONDRE HERE (FIXED!)
+            // ============================================
             function repondre(mes) { 
                 zk.sendMessage(origineMessage, { text: mes }, { quoted: ms }); 
             }
@@ -586,6 +380,215 @@ setTimeout(() => {
                 auteurMsgRepondu,
                 ms,
                 mybotpic
+            };
+
+            // ============================================
+            // 📌 ANTI-FEATURES HANDLER FUNCTIONS (NOW HAVE ACCESS TO repondre)
+            // ============================================
+            
+            // Anti-tag handler
+            const handleAntiTag = async (groupId, sender, isAdmin, msg) => {
+                try {
+                    const settings = antiFeatures.groups.get(groupId) || {};
+                    if (!settings.antitag || isAdmin) return false;
+
+                    const hasMentions = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid?.length > 0 ||
+                                       msg.message?.imageMessage?.contextInfo?.mentionedJid?.length > 0 ||
+                                       msg.message?.videoMessage?.contextInfo?.mentionedJid?.length > 0;
+                    
+                    if (hasMentions) {
+                        await zk.sendMessage(groupId, {
+                            delete: {
+                                remoteJid: groupId,
+                                fromMe: false,
+                                id: msg.key.id,
+                                participant: sender
+                            }
+                        });
+                        return true;
+                    }
+                } catch (e) {
+                    console.log('AntiTag Error:', e);
+                }
+                return false;
+            };
+
+            // Anti-media handler
+            const handleAntiMedia = async (groupId, sender, isAdmin, msg) => {
+                try {
+                    const settings = antiFeatures.groups.get(groupId) || {};
+                    if (!settings.antimedia || isAdmin) return false;
+
+                    const hasMedia = msg.message?.imageMessage ||
+                                   msg.message?.videoMessage ||
+                                   msg.message?.audioMessage ||
+                                   msg.message?.documentMessage ||
+                                   msg.message?.stickerMessage;
+                    
+                    if (hasMedia) {
+                        await zk.sendMessage(groupId, {
+                            delete: {
+                                remoteJid: groupId,
+                                fromMe: false,
+                                id: msg.key.id,
+                                participant: sender
+                            }
+                        });
+                        return true;
+                    }
+                } catch (e) {
+                    console.log('AntiMedia Error:', e);
+                }
+                return false;
+            };
+
+            // Anti-spam handler
+            const handleAntiSpam = async (groupId, sender, isAdmin, msg) => {
+                try {
+                    const settings = antiFeatures.groups.get(groupId) || {};
+                    if (!settings.antispam || isAdmin) return false;
+
+                    const now = Date.now();
+                    const userKey = `${groupId}:${sender}`;
+                    
+                    if (!antiFeatures.spamTracker.has(userKey)) {
+                        antiFeatures.spamTracker.set(userKey, {
+                            count: 1,
+                            lastMsg: now,
+                            timer: setTimeout(() => antiFeatures.spamTracker.delete(userKey), 5000)
+                        });
+                        return false;
+                    }
+
+                    const userData = antiFeatures.spamTracker.get(userKey);
+                    
+                    if (now - userData.lastMsg > 5000) {
+                        clearTimeout(userData.timer);
+                        antiFeatures.spamTracker.set(userKey, {
+                            count: 1,
+                            lastMsg: now,
+                            timer: setTimeout(() => antiFeatures.spamTracker.delete(userKey), 5000)
+                        });
+                        return false;
+                    }
+
+                    userData.count++;
+                    userData.lastMsg = now;
+
+                    if (userData.count > 5) {
+                        await zk.sendMessage(groupId, {
+                            delete: {
+                                remoteJid: groupId,
+                                fromMe: false,
+                                id: msg.key.id,
+                                participant: sender
+                            }
+                        });
+
+                        await zk.sendMessage(groupId, {
+                            text: `⚠️ @${sender.split('@')[0]} *𝙰𝙽𝚃𝙸-𝚂𝙿𝙰𝙼*\n𝙿𝚕𝚎𝚊𝚜𝚎 𝚍𝚘𝚗'𝚝 𝚜𝚙𝚊𝚖!`,
+                            mentions: [sender]
+                        });
+                        return true;
+                    }
+                } catch (e) {
+                    console.log('AntiSpam Error:', e);
+                }
+                return false;
+            };
+
+            // Anti-bug handler
+            const handleAntiBug = async (groupId, sender, isAdmin, msg) => {
+                try {
+                    const settings = antiFeatures.groups.get(groupId) || {};
+                    if (!settings.antibug || isAdmin) return false;
+
+                    const isBugMessage = 
+                        msg.message?.protocolMessage ||
+                        msg.message?.reactionMessage ||
+                        msg.message?.pollCreationMessage ||
+                        msg.message?.pollUpdateMessage ||
+                        msg.message?.paymentMessage ||
+                        msg.message?.orderMessage;
+
+                    if (isBugMessage) {
+                        await zk.sendMessage(groupId, {
+                            delete: {
+                                remoteJid: groupId,
+                                fromMe: false,
+                                id: msg.key.id,
+                                participant: sender
+                            }
+                        });
+                        return true;
+                    }
+                } catch (e) {
+                    console.log('AntiBug Error:', e);
+                }
+                return false;
+            };
+
+            // Anti-link handler
+            const handleAntiLink = async (groupId, sender, isAdmin, msg, texte) => {
+                try {
+                    const antilinkSettings = (() => {
+                        try {
+                            const data = fs.readFileSync('./database/antilink.json', 'utf8');
+                            return JSON.parse(data);
+                        } catch {
+                            return {};
+                        }
+                    })();
+
+                    const antilinkEnabled = antilinkSettings[groupId]?.enabled || false;
+                    const antilinkAction = antilinkSettings[groupId]?.action || 'delete';
+                    
+                    if (!antilinkEnabled || isAdmin || !texte) return false;
+
+                    const linkRegex = /(https?:\/\/[^\s]+)|(chat\.whatsapp\.com\/[^\s]+)|(wa\.me\/[^\s]+)/gi;
+                    if (linkRegex.test(texte)) {
+                        const key = {
+                            remoteJid: groupId,
+                            fromMe: false,
+                            id: msg.key.id,
+                            participant: sender
+                        };
+
+                        if (antilinkAction === 'delete') {
+                            await zk.sendMessage(groupId, {
+                                text: `┏━❑ 𝙰𝙽𝚃𝙸𝙻𝙸𝙽𝙺 ━━━━━━━━━\n┃ 🔗 @${sender.split('@')[0]}\n┃ ❌ Link deleted!\n┗━━━━━━━━━━━━━━━━━━━━`,
+                                mentions: [sender]
+                            });
+                            await zk.sendMessage(groupId, { delete: key });
+                            return true;
+
+                        } else if (antilinkAction === 'warn') {
+                            const warnKey = `${groupId}:${sender}`;
+                            const warns = antiFeatures.warnTracker.get(warnKey) || 0;
+                            const newWarns = warns + 1;
+                            antiFeatures.warnTracker.set(warnKey, newWarns);
+
+                            if (newWarns >= 3) {
+                                await zk.groupParticipantsUpdate(groupId, [sender], "remove");
+                                antiFeatures.warnTracker.delete(warnKey);
+                                await zk.sendMessage(groupId, {
+                                    text: `┏━❑ 𝙰𝙽𝚃𝙸𝙻𝙸𝙽𝙺 ━━━━━━━━━\n┃ 🔗 @${sender.split('@')[0]}\n┃ 🚫 Removed (3/3 warns)\n┗━━━━━━━━━━━━━━━━━━━━`,
+                                    mentions: [sender]
+                                });
+                            } else {
+                                await zk.sendMessage(groupId, {
+                                    text: `┏━❑ 𝙰𝙽𝚃𝙸𝙻𝙸𝙽𝙺 ━━━━━━━━━\n┃ 🔗 @${sender.split('@')[0]}\n┃ ⚠️ Warn ${newWarns}/3\n┗━━━━━━━━━━━━━━━━━━━━`,
+                                    mentions: [sender]
+                                });
+                            }
+                            await zk.sendMessage(groupId, { delete: key });
+                            return true;
+                        }
+                    }
+                } catch (e) {
+                    console.log('Anti-link error:', e);
+                }
+                return false;
             };
 
             // ============================================
