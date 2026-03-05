@@ -27,7 +27,7 @@ const saveAntiFeatures = (data) => {
     }
 };
 
-silamd({
+sila({
     nomCom: 'antibug',
     alias: ['antibug', 'anticrash'],
     reaction: '🐛',
@@ -37,16 +37,16 @@ silamd({
 },
 async (dest, zk, commandeOptions) => {
     try {
-        const { ms, repondre, args, verifGroupe, verifAdmin } = commandeOptions;
+        const { ms, repondre, args, verifGroupe, verifAdmin, superUser } = commandeOptions;
 
         // Check if in group
         if (!verifGroupe) {
             return repondre('┏━❑ 𝙴𝚁𝚁𝙾𝚁 ━━━━━━━━━\n┃ ❌ This command can only be used in groups!\n┗━━━━━━━━━━━━━━━━━━━━');
         }
 
-        // Check if user is admin
-        if (!verifAdmin) {
-            return repondre('┏━❑ 𝙴𝚁𝚁𝙾𝚁 ━━━━━━━━━\n┃ ❌ Only group admins can use this command!\n┗━━━━━━━━━━━━━━━━━━━━');
+        // Allow if superUser OR admin
+        if (!superUser && !verifAdmin) {
+            return repondre('┏━❑ 𝙴𝚁𝚁𝙾𝚁 ━━━━━━━━━\n┃ ❌ Only group admins and owners can use this command!\n┗━━━━━━━━━━━━━━━━━━━━');
         }
 
         const action = args[0] ? args[0].toLowerCase() : '';
