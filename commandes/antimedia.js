@@ -22,7 +22,7 @@ silamd({
 },
 async(dest, zk, commandeOptions) => {
     try {
-        const { ms, repondre, args, verifGroupe } = commandeOptions;
+        const { ms, repondre, args, prefixe, verifGroupe } = commandeOptions;
 
         // Check if in group
         if (!verifGroupe) {
@@ -37,7 +37,8 @@ async(dest, zk, commandeOptions) => {
         if (!antiMediaSettings.has(groupId)) {
             antiMediaSettings.set(groupId, {
                 status: false,
-                allowedTypes: [] // Empty means block all types
+                allowedTypes: [], // Empty means block all types
+                notified: false
             });
         }
 
@@ -52,7 +53,7 @@ async(dest, zk, commandeOptions) => {
                 if (settings.allowedTypes.length === 0) {
                     typesText = '🚫 All media types are blocked';
                 } else {
-                    typesText = `✅ Allowed: ${settings.allowedTypes.join(', ')}`;
+                    typesText = `✅ Only blocking: ${settings.allowedTypes.join(', ')}`;
                 }
             }
 
@@ -98,6 +99,7 @@ async(dest, zk, commandeOptions) => {
             }
 
             settings.status = newStatus;
+            settings.notified = false; // Reset notification flag
             antiMediaSettings.set(groupId, settings);
 
             const statusEmoji = newStatus ? '🟢' : '🔴';
@@ -148,12 +150,12 @@ async(dest, zk, commandeOptions) => {
         // Check if bot is admin (required to delete messages)
         if (!isBotAdmin) {
             // Notify once when bot is not admin
-            const notifiedKey = `notified_${groupId}`;
-            if (!antiMediaSettings.get(notifiedKey)) {
+            if (!settings.notified) {
                 await zk.sendMessage(groupId, { 
                     text: '⚠️ *Anti-Media Warning:*\nI need to be admin to delete media messages!' 
                 });
-                antiMediaSettings.set(notifiedKey, true);
+                settings.notified = true;
+                antiMediaSettings.set(groupId, settings);
             }
             return;
         }
@@ -162,11 +164,13 @@ async(dest, zk, commandeOptions) => {
         const message = ms.message || ms;
         let hasMedia = false;
         let mediaType = '';
+        let mediaMessage = null;
 
         for (const type of mediaTypes) {
             if (message[type]) {
                 hasMedia = true;
                 mediaType = type.replace('Message', '');
+                mediaMessage = message[type];
                 break;
             }
         }
@@ -178,6 +182,7 @@ async(dest, zk, commandeOptions) => {
                 if (quoted[type]) {
                     hasMedia = true;
                     mediaType = type.replace('Message', '');
+                    mediaMessage = quoted[type];
                     break;
                 }
             }
@@ -187,25 +192,35 @@ async(dest, zk, commandeOptions) => {
         if (hasMedia) {
             // Check if this media type is allowed
             const shouldDelete = settings.allowedTypes.length === 0 || // Block all
-                                !settings.allowedTypes.includes(mediaType); // Block specific type
+                                settings.allowedTypes.includes(mediaType); // Block specific type
             
             if (shouldDelete) {
+                // Get message info for deletion
+                const messageId = ms.key.id;
+                const participant = ms.key.participant || ms.key.remoteJid;
+                
                 // Delete the message
                 await zk.sendMessage(groupId, { 
                     delete: { 
                         remoteJid: groupId, 
                         fromMe: false, 
-                        id: ms.key.id,
-                        participant: ms.key.participant || ms.key.remoteJid
+                        id: messageId,
+                        participant: participant
                     } 
                 });
 
-                // Optional: Send warning to user (can be commented out if too spammy)
-                const sender = ms.key.participant || ms.key.remoteJid;
-                await zk.sendMessage(groupId, { 
-                    text: `⚠️ @${sender.split('@')[0]} *${mediaType.toUpperCase()}* is not allowed in this group!`,
-                    mentions: [sender]
-                });
+                // Send warning to user (with small delay to avoid rate limiting)
+                setTimeout(async () => {
+                    try {
+                        const sender = ms.pushName || participant.split('@')[0];
+                        await zk.sendMessage(groupId, { 
+                            text: `⚠️ @${participant.split('@')[0]} *${mediaType.toUpperCase()}* is not allowed in this group!`,
+                            mentions: [participant]
+                        });
+                    } catch (e) {
+                        console.log("Warning send error:", e);
+                    }
+                }, 500);
             }
         }
 
