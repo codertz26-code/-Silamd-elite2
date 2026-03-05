@@ -1,7 +1,9 @@
 const { sila } = require("../silamd/sila");
 const moment = require("moment-timezone");
+const os = require('os');
 
-const menuImage = "https://files.catbox.moe/36vahk.png";
+// PICHA YAKO MPYA
+const menuImage = "https://files.catbox.moe/i4aqjo.png";
 
 // FakevCard
 const fkontak = {
@@ -16,6 +18,17 @@ const fkontak = {
     }
 };
 
+// Function to calculate uptime
+function getUptime() {
+    const uptimeSeconds = process.uptime();
+    const days = Math.floor(uptimeSeconds / (3600 * 24));
+    const hours = Math.floor((uptimeSeconds % (3600 * 24)) / 3600);
+    const minutes = Math.floor((uptimeSeconds % 3600) / 60);
+    const seconds = Math.floor(uptimeSeconds % 60);
+    
+    return `${days}d ${hours}h ${minutes}m ${seconds}s`;
+}
+
 sila({ 
     nomCom: 'menu',
     alias: ['menu', 'help', 'cmd'],
@@ -27,6 +40,9 @@ sila({
 async(dest, zk, commandeOptions) => {
 try{
     const { ms, repondre, prefixe, nomAuteurMessage } = commandeOptions;
+    
+    // Get total commands count automatically
+    const totalCommands = Object.keys(sila.commands || {}).length || 100;
 
     const commandButtons = [
         { buttonId: `${prefixe}allmenu`, buttonText: { displayText: "📋 𝙰𝙻𝙻 𝙼𝙴𝙽𝚄" }, type: 1 },
@@ -35,27 +51,27 @@ try{
     ];
 
     const buttonMessage = {
-        text: `┏━❑ 𝐒𝐈𝐋𝐀-𝐌𝐃 ━━━━━━━━━
-┃ 🤖 *𝙱𝚘𝚝:* 𝐒𝐈𝐋𝐀-𝙼𝙳
-┃ ⏰ *𝚃𝚒𝚖𝚎:* ${moment().tz("Africa/Nairobi").format("DD/MM/YYYY HH:mm")}
-┃ 👤 *𝚄𝚜𝚎𝚛:* @${dest.split('@')[0]}
-┗━━━━━━━━━━━━━━━━━━━━
+        image: { url: menuImage },  // PICHA IKO HAPA KAMA KAWAIDA, SI THUMBNAIL
+        caption: `┏━[ 𝐒𝐈𝐋𝐀-𝐌𝐃 ]━❍
+┃ 🤖 *ʙᴏᴛ ɴᴀᴍᴇ:* 𝐒𝐈𝐋𝐀-𝐌𝐃
+┃ ⏰ *ᴜᴘᴛɪᴍᴇ:* ${getUptime()}
+┃ 👤 *ᴜsᴇʀ:* @${dest.split('@')[0]}
+┃ 📊 *ᴛᴏᴛᴀʟ ᴄᴍᴅs:* ${totalCommands}
+┃ 🔰 *ᴘʀᴇғɪx:* ${prefixe}
+┗━━━━━━━━━━━━━━━━━━❍
 
-━━━━━━━━━━━━━━━━━━━━
-> © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`,
-        footer: "𝚂𝙸𝙻𝙰-𝙼𝙳 𝙱𝙾𝚃 © 2026",
+> © ᴘᴏᴡᴇʀᴇᴅ ʙʏ sɪʟᴀ-ᴍᴅ`,
+        footer: "© 2026",
         buttons: commandButtons,
-        headerType: 1,
+        headerType: 4,  // HeaderType 4 ni kwa image
         contextInfo: {
             mentionedJid: [dest],
-            externalAdReply: {
-                title: `📋 𝚂𝙸𝙻𝙰-𝙼𝙳 𝙼𝚎𝚗𝚞`,
-                body: `👤 @${dest.split('@')[0]}`,
-                mediaType: 1,
-                previewType: 0,
-                thumbnailUrl: menuImage,
-                sourceUrl: 'https://github.com/',
-                renderLargerThumbnail: true, // THUMBNAIL KUBWA
+            forwardingScore: 999,
+            isForwarded: true,
+            forwardedNewsletterMessageInfo: {
+                newsletterJid: '120363317350973182@newsletter',
+                newsletterName: "𝐒𝐈𝐋𝐀-𝐌𝐃",
+                serverMessageId: -1
             }
         }
     };
