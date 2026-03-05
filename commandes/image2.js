@@ -16,11 +16,11 @@ const fkontak = {
     }
 };
 
-// ── Image search command ─────────────────────────────────
+// ── Image search command with carousel ─────────────────────────────────
 sila({
     nomCom: 'image2',
     alias: ['image2', 'images2', 'img', 'pic'],
-    desc: 'Search for images',
+    desc: 'Search for images (carousel view)',
     Categorie: 'Images',
     reaction: '🖼️',
     fromMe: 'false'
@@ -39,10 +39,9 @@ sila({
     
     // Send loading message
     await zk.sendMessage(dest, {
-        text: `┏━❑ 𝙸𝙼𝙰𝙶𝙴 𝚂𝙴𝙰𝚁𝙲𝙷 ━━━━━━━━━
+        text: `
 ┃ ⏳ *sila is searching for:* ${searchTerm}
-┃ 🖼️ *Please wait...*
-┗━━━━━━━━━━━━━━━━━━━━`
+`
     }, { quoted: fkontak });
 
     try {
@@ -60,45 +59,118 @@ sila({
 > © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`);
         }
 
-        // Create vCard contacts for scrolling
-        const contacts = [];
-        const maxImages = Math.min(results.length, 10); // Maximum 10 images
-        
+        // Create carousel cards (maximum 10 images)
+        const cards = [];
+        const maxImages = Math.min(results.length, 10);
+
         for (let i = 0; i < maxImages; i++) {
             const result = results[i];
             if (!result || !result.url) continue;
-            
-            // Create vCard for each image
-            const vcard = 'BEGIN:VCARD\n'
-                + 'VERSION:3.0\n'
-                + `FN:Image ${i + 1} - ${searchTerm}\n`
-                + `ORG:SILA-MD Image Search;\n`
-                + `TEL;type=CELL;type=VOICE;waid=255123456789:+255 123 456 789\n`
-                + 'END:VCARD';
-            
-            contacts.push({
-                displayName: `🖼️ Image ${i + 1}`,
-                vcard: vcard
+
+            // Get image dimensions
+            let dimensions = "Unknown";
+            if (result.width && result.height) {
+                dimensions = `${result.width} x ${result.height}`;
+            }
+
+            cards.push({
+                header: `🖼️ *Image ${i + 1}/${maxImages}*`,
+                body: {
+                    text: `┏━❑ 𝙸𝙼𝙰𝙶𝙴 𝙳𝙴𝚃𝙰𝙸𝙻𝚂 ━━━━━━━
+┃ 📌 *Search:* ${searchTerm}
+┃ 📏 *Size:* ${dimensions}
+┃ 🔗 *URL:* ${result.url}
+┗━━━━━━━━━━━━━━━━━━━━`
+                },
+                media: {
+                    image: {
+                        url: result.url
+                    }
+                },
+                buttons: [
+                    {
+                        name: "cta_url",
+                        buttonParamsJson: JSON.stringify({
+                            display_text: "🔗 Open Image",
+                            url: result.url
+                        })
+                    },
+                    {
+                        name: "cta_copy",
+                        buttonParamsJson: JSON.stringify({
+                            display_text: "📋 Copy URL",
+                            id: "copy_url",
+                            copy_code: result.url
+                        })
+                    }
+                ]
             });
         }
 
-        // Send images with contacts for scrolling
+        if (cards.length === 0) {
+            return repondre(`┏━❑ 𝙸𝙼𝙰𝙶𝙴 𝚂𝙴𝙰𝚁𝙲𝙷 ━━━━━━━━━
+┃ ❌ *No valid images found!*
+┗━━━━━━━━━━━━━━━━━━━━
+> © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`);
+        }
+
+        // Send as interactive carousel message
         await zk.sendMessage(dest, {
-            contacts: {
-                displayName: `${maxImages} Images Found`,
-                contacts: contacts
+            interactiveMessage: {
+                header: {
+                    title: `┏━❑ 𝙸𝙼𝙰𝙶𝙴 𝚂𝙴𝙰𝚁𝙲𝙷 𝚁𝙴𝚂𝚄𝙻𝚃𝚂 ━━━━━━━
+┃ 🖼️ *${cards.length} images found for:* ${searchTerm}
+┃ 👆 *Swipe left/right to view more*
+┗━━━━━━━━━━━━━━━━━━━━`,
+                    hasMediaAttachment: false
+                },
+                body: {
+                    text: `📱 *Use buttons below each image*`
+                },
+                nativeFlowMessage: {
+                    buttons: [
+                        {
+                            name: "single_select",
+                            buttonParamsJson: JSON.stringify({
+                                title: "📱 More Options",
+                                sections: [
+                                    {
+                                        title: "Image Options",
+                                        rows: [
+                                            {
+                                                title: "🔍 New Search",
+                                                description: "Search for different images",
+                                                id: `new_search_${Date.now()}`
+                                            },
+                                            {
+                                                title: "📋 Get All URLs",
+                                                description: "View all image URLs",
+                                                id: `get_urls_${Date.now()}`
+                                            }
+                                        ]
+                                    }
+                                ]
+                            })
+                        }
+                    ]
+                },
+                carouselMessage: {
+                    cards: cards
+                }
             }
         }, { quoted: fkontak });
 
-        // Send a summary message
-        await zk.sendMessage(dest, {
-            text: `┏━❑ 𝙸𝙼𝙰𝙶𝙴 𝚂𝙴𝙰𝚁𝙲𝙷 𝚁𝙴𝚂𝚄𝙻𝚃𝚂 ━━━━━━━━━
-┃ ✅ *Found ${results.length} images for:* ${searchTerm}
-┃ 🖼️ *Displayed ${maxImages} images*
-┃ 👆 *Scroll through contacts to view images*
+        // Send summary message after carousel
+        setTimeout(async () => {
+            await zk.sendMessage(dest, {
+                text: `┏━❑ 𝙸𝙼𝙰𝙶𝙴 𝚂𝙴𝙰𝚁𝙲𝙷 𝙲𝙾𝙼𝙿𝙻𝙴𝚃𝙴 ━━━━━━━━━
+┃ ✅ *Found ${results.length} images total*
+┃ 🖼️ *Displayed ${cards.length} images in carousel*
+┃ 👆 *Swipe left/right to scroll through images*
 ┗━━━━━━━━━━━━━━━━━━━━
 > © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`
-        }, { quoted: fkontak });
+            }, { quoted: fkontak });
+        }, 1000);
 
     } catch (error) {
         console.error("Image search error:", error);
