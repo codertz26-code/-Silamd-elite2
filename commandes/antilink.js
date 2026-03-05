@@ -2,135 +2,124 @@ const { silamd } = require("../silamd/sila");
 const fs = require('fs-extra');
 const path = require('path');
 
-// Antilink storage path
-const antilinkPath = path.join(__dirname, '../database/antilink.json');
+// Anti-features storage path
+const antiFeaturesPath = path.join(__dirname, '../database/antifeatures.json');
 
-// Load antilink settings
-const loadAntilink = () => {
+// Load anti-features settings
+const loadAntiFeatures = () => {
     try {
-        if (fs.existsSync(antilinkPath)) {
-            return JSON.parse(fs.readFileSync(antilinkPath, 'utf8'));
+        if (fs.existsSync(antiFeaturesPath)) {
+            return JSON.parse(fs.readFileSync(antiFeaturesPath, 'utf8'));
         }
     } catch (e) {
-        console.log('Error loading antilink:', e);
+        console.log('Error loading antiall:', e);
     }
     return {};
 };
 
-// Save antilink settings
-const saveAntilink = (data) => {
+// Save anti-features settings
+const saveAntiFeatures = (data) => {
     try {
         fs.ensureDirSync(path.join(__dirname, '../database'));
-        fs.writeFileSync(antilinkPath, JSON.stringify(data, null, 2));
+        fs.writeFileSync(antiFeaturesPath, JSON.stringify(data, null, 2));
     } catch (e) {
-        console.log('Error saving antilink:', e);
+        console.log('Error saving antiall:', e);
     }
 };
 
 sila({
-    nomCom: 'antilink',
-    alias: ['antilink', 'antilien', 'antilinks'],
-    reaction: '🔗',
-    desc: 'Enable/disable anti-link feature in group',
+    nomCom: 'antiall',
+    alias: ['antiall', 'anti-all', 'antitotal'],
+    reaction: '🛡️',
+    desc: 'Enable/disable all anti-features at once',
     Categorie: 'Group',
     fromMe: 'true'
 },
 async (dest, zk, commandeOptions) => {
     try {
-        const { ms, repondre, args, verifGroupe, verifAdmin, prefixe } = commandeOptions;
+        const { ms, repondre, args, verifGroupe, verifAdmin, superUser, prefixe } = commandeOptions;
 
         // Check if in group
         if (!verifGroupe) {
             return repondre('┏━❑ 𝙴𝚁𝚁𝙾𝚁 ━━━━━━━━━\n┃ ❌ This command can only be used in groups!\n┗━━━━━━━━━━━━━━━━━━━━');
         }
 
-        // Check if user is admin
-        if (!verifAdmin) {
-            return repondre('┏━❑ 𝙴𝚁𝚁𝙾𝚁 ━━━━━━━━━\n┃ ❌ Only group admins can use this command!\n┗━━━━━━━━━━━━━━━━━━━━');
+        // Allow if superUser OR admin
+        if (!superUser && !verifAdmin) {
+            return repondre('┏━❑ 𝙴𝚁𝚁𝙾𝚁 ━━━━━━━━━\n┃ ❌ Only group admins and owners can use this command!\n┗━━━━━━━━━━━━━━━━━━━━');
         }
 
         const action = args[0] ? args[0].toLowerCase() : '';
-        const option = args[1] ? args[1].toLowerCase() : '';
         
-        if (!action || (action !== 'on' && action !== 'off' && action !== 'status' && action !== 'action')) {
-            return repondre(`┏━❑ 𝙰𝙽𝚃𝙸𝙻𝙸𝙽𝙺 𝙷𝙴𝙻𝙿 ━━━━━━━━━
+        if (!action || (action !== 'on' && action !== 'off' && action !== 'status')) {
+            return repondre(`┏━❑ 𝙰𝙽𝚃𝙸𝙰𝙻𝙻 𝙷𝙴𝙻𝙿 ━━━━━━━━━
 ┃ 📝 *Usage:*
-┃ ${prefixe}antilink on
-┃ ${prefixe}antilink off
-┃ ${prefixe}antilink status
-┃ ${prefixe}antilink action delete
-┃ ${prefixe}antilink action warn
+┃ ${prefixe}antiall on  (Turn on ALL)
+┃ ${prefixe}antiall off (Turn off ALL)
+┃ ${prefixe}antiall status
 ┃ 
-┃ 📋 *Actions:*
-┃ • delete - Delete link only
-┃ • warn - Delete + warn (removes after 3 warns)
+┃ 📋 *Features included:*
+┃ • Anti-Tag
+┃ • Anti-Media
+┃ • Anti-Spam
+┃ • Anti-Bug
 ┗━━━━━━━━━━━━━━━━━━━━
 > © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`);
         }
 
         // Load current settings
-        const allSettings = loadAntilink();
+        const allSettings = loadAntiFeatures();
         const groupId = dest;
         
         if (!allSettings[groupId]) {
-            allSettings[groupId] = {
-                enabled: false,
-                action: 'delete',
-                warnedUsers: {}
-            };
-        }
-
-        // Handle action change
-        if (action === 'action') {
-            if (option !== 'delete' && option !== 'warn') {
-                return repondre(`┏━❑ 𝙴𝚁𝚁𝙾𝚁 ━━━━━━━━━
-┃ ❌ Invalid action! Use: delete or warn
-┗━━━━━━━━━━━━━━━━━━━━`);
-            }
-            
-            allSettings[groupId].action = option;
-            saveAntilink(allSettings);
-            
-            return repondre(`┏━❑ 𝙰𝙽𝚃𝙸𝙻𝙸𝙽𝙺 ━━━━━━━━━
-┃ ✅ Anti-link action set to: *${option.toUpperCase()}*
-┃ 📁 *Group:* ${groupId}
-┗━━━━━━━━━━━━━━━━━━━━
-> © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`);
+            allSettings[groupId] = {};
         }
 
         // Handle status check
         if (action === 'status') {
-            const status = allSettings[groupId].enabled ? '🟢 ENABLED' : '🔴 DISABLED';
-            const currentAction = allSettings[groupId].action || 'delete';
+            let features = '';
+            features += `\n┃ • Anti-Tag: ${allSettings[groupId].antitag ? '✅' : '❌'}`;
+            features += `\n┃ • Anti-Media: ${allSettings[groupId].antimedia ? '✅' : '❌'}`;
+            features += `\n┃ • Anti-Spam: ${allSettings[groupId].antispam ? '✅' : '❌'}`;
+            features += `\n┃ • Anti-Bug: ${allSettings[groupId].antibug ? '✅' : '❌'}`;
             
-            return repondre(`┏━❑ 𝙰𝙽𝚃𝙸𝙻𝙸𝙽𝙺 𝚂𝚃𝙰𝚃𝚄𝚂 ━━━━━━━━━
-┃ 📊 *Status:* ${status}
-┃ ⚙️ *Action:* ${currentAction.toUpperCase()}
+            return repondre(`┏━❑ 𝙰𝙽𝚃𝙸𝙰𝙻𝙻 𝚂𝚃𝙰𝚃𝚄𝚂 ━━━━━━━━━
 ┃ 📁 *Group:* ${groupId}
+┃ 📋 *Features:${features}
 ┃ 
-┃ 📝 *Use ${prefixe}antilink on/off to change*
+┃ 📝 *Use ${prefixe}antiall on/off to toggle all*
 ┗━━━━━━━━━━━━━━━━━━━━
 > © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`);
         }
 
-        // Enable/disable
-        allSettings[groupId].enabled = (action === 'on');
-        saveAntilink(allSettings);
+        // Enable/disable ALL features
+        const newStatus = (action === 'on');
+        
+        // Set all anti-features
+        allSettings[groupId].antitag = newStatus;
+        allSettings[groupId].antimedia = newStatus;
+        allSettings[groupId].antispam = newStatus;
+        allSettings[groupId].antibug = newStatus;
+        
+        saveAntiFeatures(allSettings);
 
-        const statusEmoji = action === 'on' ? '🟢' : '🔴';
-        const statusText = action === 'on' ? 'ENABLED' : 'DISABLED';
+        const statusEmoji = newStatus ? '🟢' : '🔴';
+        const statusText = newStatus ? 'ENABLED' : 'DISABLED';
 
-        repondre(`┏━❑ 𝙰𝙽𝚃𝙸𝙻𝙸𝙽𝙺 ━━━━━━━━━
-┃ ${statusEmoji} *Anti-Link ${statusText}!*
-┃ ⚙️ *Action:* ${allSettings[groupId].action?.toUpperCase() || 'DELETE'}
+        repondre(`┏━❑ 𝙰𝙽𝚃𝙸𝙰𝙻𝙻 ━━━━━━━━━
+┃ ${statusEmoji} *All Anti-Features ${statusText}!*
 ┃ 📁 *Group:* ${groupId}
 ┃ 
-┃ ✅ Successfully turned ${action}!
+┃ ✅ Successfully turned ${action}:
+┃ • Anti-Tag: ${newStatus ? '✅' : '❌'}
+┃ • Anti-Media: ${newStatus ? '✅' : '❌'}
+┃ • Anti-Spam: ${newStatus ? '✅' : '❌'}
+┃ • Anti-Bug: ${newStatus ? '✅' : '❌'}
 ┗━━━━━━━━━━━━━━━━━━━━
 > © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`);
 
     } catch (e) {
-        console.log('❌ Antilink Command Error:', e);
+        console.log('❌ Antiall Command Error:', e);
         repondre(`┏━❑ 𝙴𝚁𝚁𝙾𝚁 ━━━━━━━━━
 ┃ ❌ ${e.message}
 ┗━━━━━━━━━━━━━━━━━━━━
