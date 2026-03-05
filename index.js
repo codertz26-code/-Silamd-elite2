@@ -51,7 +51,16 @@ const more = String.fromCharCode(8206);
 const readmore = more.repeat(4001);
 
 // ============================================
-// 📌 FAKEVCARD MPYA (Iliyorekebishwa)
+// 📌 ANTI-FEATURES STORAGE
+// ============================================
+const antiFeatures = {
+    groups: new Map(), // Store settings per group
+    spamTracker: new Map(), // For anti-spam
+    warnTracker: new Map() // For warning counts
+};
+
+// ============================================
+// 📌 FAKEVCARD MPYA
 // ============================================
 const fkontak = {
     "key": {
@@ -142,106 +151,6 @@ setTimeout(() => {
         // Select a random image file
         const randomNjabulourl = njabulox[Math.floor(Math.random() * njabulox.length)];
 
-        const audioMap = {
-            "hallo": "audios/hello.m4a",
-            "hi": "audios/hello.m4a",
-            "hey": "audios/hello.m4a",
-            "hy": "audios/hello.m4a",
-            "hello": "audios/hello.m4a",
-            "mmm": "audios/mmm.m4a",
-            "sorry": "audios/sorry.m4a",
-            "morning": "audios/goodmorning.m4a",
-            "goodmorning": "audios/goodmorning.m4a",
-            "wake up": "audios/goodmorning.m4a",
-            "night": "audios/goodnight.m4a",
-            "goodnight": "audios/goodnight.m4a",
-            "sleep": "audios/goodnight.m4a",
-            "man": "audios/man.m4a",
-            "owoh": "audios/mkuu.m4a",
-            "baby": "audios/baby.m4a",
-            "miss": "audios/miss.m4a",
-            "bot": "audios/njabulo.m4a",
-            "Njabulo": "audios/njabulo.m4a",
-            "promise": "audios/promise.m4a",
-            "store": "audios/store.m4a",
-            "cry": "audios/cry.m4a",
-            "md": "audios/njabulo.m4a",
-            "crying": "audios/crying .m4a",
-            "beautiful": "audios/beautiful.m4a",
-            "evening": "audios/goodevening.m4a",
-            "goodevening": "audios/goodevening.m4a",
-            "darling": "audios/darling.m4a",
-            "love": "audios/love.m4a",
-            "afternoon": "audios/goodafternoon.m4a",
-            "school": "audios/school.m4a",
-            "kkk": "audios/kkk.m4a",
-            "kkkk": "audios/kkk.m4a",
-            "lol": "audios/kkk.m4a",
-            "bro": "audios/bro.m4a",
-            "goodbye": "audios/goodbye.m4a",
-            "believe": "audios/believe.m4a",
-            "welcome": "audios/welcome.m4a",
-            "bye": "audios/bye.m4a",
-            "fuck": "audios/fuck.m4a",
-            "friend": "audios/friend.m4a",
-            "gril": "audios/gril.m4a",
-            "bea": "audios/baby.m4a",
-            "boy": "audios/boy.m4a",
-            "life": "audios/life.m4a",
-            "hate": "audios/sorry.m4a",
-            "sex": "audios/sex.m4a",
-            "broke": "audios/broke.m4",
-            "feeling": "audios/baby.m4a",
-            "heart": "audios/heart.m4a",
-            "kiss": "audios/kiss.m4a",
-            "hug": "audios/hug.m4a",
-            "https": "audio/https.m4a",
-            "technology": "audio/technology.m4a",
-        };
-
-        // Utility to get audio file path for a message
-        const getAudioForSentence = (sentence) => {
-            const words = sentence.split(/\s+/);
-            for (const word of words) {
-                const audioFile = audioMap[word.toLowerCase()];
-                if (audioFile) return audioFile;
-            }
-            return null;
-        };
-
-        // Auto-reply with audio functionality
-        if (conf.AUDIO_REPLY === "yes") {
-            console.log("AUDIO_REPLY is enabled. Listening for messages...");
-
-            zk.ev.on("messages.upsert", async (m) => {
-                try {
-                    const { messages } = m;
-                    for (const message of messages) {
-                        if (!message.key || !message.key.remoteJid) continue;
-                        const conversationText = message?.message?.conversation || "";
-                        const audioFile = getAudioForSentence(conversationText);
-                        if (audioFile) {
-                            try {
-                                await fs.access(audioFile);
-                                console.log(`Replying with audio: ${audioFile}`);
-                                await zk.sendMessage(message.key.remoteJid, {
-                                    audio: { url: audioFile },
-                                    mimetype: "audio/mp4",
-                                    ptt: true
-                                }, { quoted: fkontak });
-                                console.log(`Audio reply sent: ${audioFile}`);
-                            } catch (err) {
-                                console.error(`Error sending audio reply: ${err.message}`);
-                            }
-                        }
-                        await new Promise((resolve) => setTimeout(resolve, 3000));
-                    }
-                } catch (err) {
-                    console.error("Error in message processing:", err.message);
-                }
-            });
-        }
-
         // ============================================
         // 📌 CHATBOT SYSTEM (Auto-reply without prefix)
         // ============================================
@@ -265,6 +174,230 @@ setTimeout(() => {
             "sila": "𝚈𝚎𝚜, 𝚝𝚑𝚊𝚝'𝚜 𝚖𝚎! *𝚂𝙸𝙻𝙰-𝙼𝙳* 𝚊𝚝 𝚢𝚘𝚞𝚛 𝚜𝚎𝚛𝚟𝚒𝚌𝚎!",
             "bot": "𝙸'𝚖 𝚑𝚎𝚛𝚎! 𝙷𝚘𝚠 𝚌𝚊𝚗 𝙸 𝚊𝚜𝚜𝚒𝚜𝚝 𝚢𝚘𝚞?",
             "help": "𝚃𝚢𝚙𝚎 *${prefixe}menu* 𝚝𝚘 𝚜𝚎𝚎 𝚊𝚕𝚕 𝚖𝚢 𝚌𝚘𝚖𝚖𝚊𝚗𝚍𝚜!"
+        };
+
+        // ============================================
+        // 📁 LOAD ANTI-FEATURES SETTINGS
+        // ============================================
+        function loadAntiFeatures() {
+            try {
+                if (fs.existsSync('./database/antifeatures.json')) {
+                    const data = JSON.parse(fs.readFileSync('./database/antifeatures.json', 'utf8'));
+                    for (const [groupId, settings] of Object.entries(data)) {
+                        antiFeatures.groups.set(groupId, settings);
+                    }
+                }
+            } catch (e) {
+                console.log('Error loading anti-features:', e);
+            }
+        }
+
+        function saveAntiFeatures() {
+            try {
+                const data = {};
+                for (const [groupId, settings] of antiFeatures.groups) {
+                    data[groupId] = settings;
+                }
+                fs.ensureDirSync('./database');
+                fs.writeFileSync('./database/antifeatures.json', JSON.stringify(data, null, 2));
+            } catch (e) {
+                console.log('Error saving anti-features:', e);
+            }
+        }
+
+        loadAntiFeatures();
+
+        // ============================================
+        // 📌 ANTI-FEATURES HANDLER FUNCTIONS
+        // ============================================
+        
+        // Anti-tag handler
+        const handleAntiTag = async (groupId, sender, isAdmin, msg) => {
+            const settings = antiFeatures.groups.get(groupId) || {};
+            if (!settings.antitag || isAdmin) return false;
+
+            const hasMentions = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid?.length > 0 ||
+                               msg.message?.imageMessage?.contextInfo?.mentionedJid?.length > 0 ||
+                               msg.message?.videoMessage?.contextInfo?.mentionedJid?.length > 0;
+            
+            if (hasMentions) {
+                await zk.sendMessage(groupId, {
+                    delete: {
+                        remoteJid: groupId,
+                        fromMe: false,
+                        id: msg.key.id,
+                        participant: sender
+                    }
+                });
+                return true;
+            }
+            return false;
+        };
+
+        // Anti-media handler
+        const handleAntiMedia = async (groupId, sender, isAdmin, msg) => {
+            const settings = antiFeatures.groups.get(groupId) || {};
+            if (!settings.antimedia || isAdmin) return false;
+
+            const hasMedia = msg.message?.imageMessage ||
+                           msg.message?.videoMessage ||
+                           msg.message?.audioMessage ||
+                           msg.message?.documentMessage ||
+                           msg.message?.stickerMessage;
+            
+            if (hasMedia) {
+                await zk.sendMessage(groupId, {
+                    delete: {
+                        remoteJid: groupId,
+                        fromMe: false,
+                        id: msg.key.id,
+                        participant: sender
+                    }
+                });
+                return true;
+            }
+            return false;
+        };
+
+        // Anti-spam handler
+        const handleAntiSpam = async (groupId, sender, isAdmin, msg) => {
+            const settings = antiFeatures.groups.get(groupId) || {};
+            if (!settings.antispam || isAdmin) return false;
+
+            const now = Date.now();
+            const userKey = `${groupId}:${sender}`;
+            
+            if (!antiFeatures.spamTracker.has(userKey)) {
+                antiFeatures.spamTracker.set(userKey, {
+                    count: 1,
+                    lastMsg: now,
+                    timer: setTimeout(() => antiFeatures.spamTracker.delete(userKey), 5000)
+                });
+                return false;
+            }
+
+            const userData = antiFeatures.spamTracker.get(userKey);
+            
+            if (now - userData.lastMsg > 5000) {
+                clearTimeout(userData.timer);
+                antiFeatures.spamTracker.set(userKey, {
+                    count: 1,
+                    lastMsg: now,
+                    timer: setTimeout(() => antiFeatures.spamTracker.delete(userKey), 5000)
+                });
+                return false;
+            }
+
+            userData.count++;
+            userData.lastMsg = now;
+
+            if (userData.count > 5) {
+                await zk.sendMessage(groupId, {
+                    delete: {
+                        remoteJid: groupId,
+                        fromMe: false,
+                        id: msg.key.id,
+                        participant: sender
+                    }
+                });
+
+                await zk.sendMessage(groupId, {
+                    text: `⚠️ @${sender.split('@')[0]} *𝙰𝙽𝚃𝙸-𝚂𝙿𝙰𝙼*\n𝙿𝚕𝚎𝚊𝚜𝚎 𝚍𝚘𝚗'𝚝 𝚜𝚙𝚊𝚖!`,
+                    mentions: [sender]
+                });
+                return true;
+            }
+            return false;
+        };
+
+        // Anti-bug handler
+        const handleAntiBug = async (groupId, sender, isAdmin, msg) => {
+            const settings = antiFeatures.groups.get(groupId) || {};
+            if (!settings.antibug || isAdmin) return false;
+
+            const isBugMessage = 
+                msg.message?.protocolMessage ||
+                msg.message?.reactionMessage ||
+                msg.message?.pollCreationMessage ||
+                msg.message?.pollUpdateMessage ||
+                msg.message?.paymentMessage ||
+                msg.message?.orderMessage;
+
+            if (isBugMessage) {
+                await zk.sendMessage(groupId, {
+                    delete: {
+                        remoteJid: groupId,
+                        fromMe: false,
+                        id: msg.key.id,
+                        participant: sender
+                    }
+                });
+                return true;
+            }
+            return false;
+        };
+
+        // Anti-link handler (from existing)
+        const handleAntiLink = async (groupId, sender, isAdmin, msg, texte) => {
+            try {
+                const antilinkSettings = (() => {
+                    try {
+                        const data = fs.readFileSync('./database/antilink.json', 'utf8');
+                        return JSON.parse(data);
+                    } catch {
+                        return {};
+                    }
+                })();
+
+                const antilinkEnabled = antilinkSettings[groupId]?.enabled || false;
+                const antilinkAction = antilinkSettings[groupId]?.action || 'delete';
+                
+                if (!antilinkEnabled || isAdmin || !texte) return false;
+
+                const linkRegex = /(https?:\/\/[^\s]+)|(chat\.whatsapp\.com\/[^\s]+)|(wa\.me\/[^\s]+)/gi;
+                if (linkRegex.test(texte)) {
+                    const key = {
+                        remoteJid: groupId,
+                        fromMe: false,
+                        id: msg.key.id,
+                        participant: sender
+                    };
+
+                    if (antilinkAction === 'delete') {
+                        await zk.sendMessage(groupId, {
+                            text: `┏━❑ 𝙰𝙽𝚃𝙸𝙻𝙸𝙽𝙺 ━━━━━━━━━\n┃ 🔗 @${sender.split('@')[0]}\n┃ ❌ Link deleted!\n┗━━━━━━━━━━━━━━━━━━━━`,
+                            mentions: [sender]
+                        });
+                        await zk.sendMessage(groupId, { delete: key });
+                        return true;
+
+                    } else if (antilinkAction === 'warn') {
+                        const warnKey = `${groupId}:${sender}`;
+                        const warns = antiFeatures.warnTracker.get(warnKey) || 0;
+                        const newWarns = warns + 1;
+                        antiFeatures.warnTracker.set(warnKey, newWarns);
+
+                        if (newWarns >= 3) {
+                            await zk.groupParticipantsUpdate(groupId, [sender], "remove");
+                            antiFeatures.warnTracker.delete(warnKey);
+                            await zk.sendMessage(groupId, {
+                                text: `┏━❑ 𝙰𝙽𝚃𝙸𝙻𝙸𝙽𝙺 ━━━━━━━━━\n┃ 🔗 @${sender.split('@')[0]}\n┃ 🚫 Removed (3/3 warns)\n┗━━━━━━━━━━━━━━━━━━━━`,
+                                mentions: [sender]
+                            });
+                        } else {
+                            await zk.sendMessage(groupId, {
+                                text: `┏━❑ 𝙰𝙽𝚃𝙸𝙻𝙸𝙽𝙺 ━━━━━━━━━\n┃ 🔗 @${sender.split('@')[0]}\n┃ ⚠️ Warn ${newWarns}/3\n┗━━━━━━━━━━━━━━━━━━━━`,
+                                mentions: [sender]
+                            });
+                        }
+                        await zk.sendMessage(groupId, { delete: key });
+                        return true;
+                    }
+                }
+            } catch (e) {
+                console.log('Anti-link error:', e);
+            }
+            return false;
         };
 
         // ============================================
@@ -314,7 +447,7 @@ setTimeout(() => {
             const nomAuteurMessage = ms.pushName;
 
             // ============================================
-            // 📌 OWNER NUMBERS (Iliyorekebishwa)
+            // 📌 OWNER NUMBERS
             // ============================================
             const dj = '255756716945971';
             const dj2 = '255716945971';
@@ -322,7 +455,6 @@ setTimeout(() => {
             const luffy = '255756715126';
             const sudo = await getAllSudoNumbers();
             
-            // Owner numbers from config and hardcoded
             const ownerNumbers = [
                 servBot,
                 '255789661031',
@@ -375,13 +507,13 @@ setTimeout(() => {
             var verifZokouAdmin = verifGroupe ? admins.includes(idBot) : false;
 
             // ============================================
-            // 📌 AUTO-PREFIX SYSTEM (Bila prefix commands)
+            // 📌 AUTO-PREFIX SYSTEM
             // ============================================
             let commandPrefix = prefixe;
             let commandText = texte;
             let hasPrefix = texte ? texte.startsWith(prefixe) : false;
 
-            if (!hasPrefix && texte && !verifGroupe) { // Only in private chat
+            if (!hasPrefix && texte && !verifGroupe) {
                 const cmdName = texte.trim().split(/ +/).shift().toLowerCase();
                 const cmdExists = evt.cm.find((zokou) => zokou.nomCom === cmdName || 
                     (zokou.alias && zokou.alias.includes(cmdName)));
@@ -427,62 +559,94 @@ setTimeout(() => {
                 mybotpic
             };
 
-
-// ============================================
-// 📌 ANTI-DELETE MESSAGE (Inatumia database)
-// ============================================
-try {
-    // Load antidelete settings
-    const antideleteSettings = (() => {
-        try {
-            const data = fs.readFileSync('./database/antidelete.json', 'utf8');
-            return JSON.parse(data);
-        } catch {
-            return { global: { enabled: conf.ADM?.toLowerCase() === 'yes' } };
-        }
-    })();
-
-    if(ms.message.protocolMessage && ms.message.protocolMessage.type === 0 && antideleteSettings.global?.enabled) {
-        if(ms.key.fromMe || ms.message.protocolMessage.key.fromMe) { 
-            console.log('Message supprimer me concernant'); 
-            return; 
-        }
-
-        console.log('🗑️ Message deleted detected');
-        let key = ms.message.protocolMessage.key;
-
-        try {
-            let st = './store.json';
-            if (!fs.existsSync(st)) return;
-            
-            const data = fs.readFileSync(st, 'utf8');
-            const jsonData = JSON.parse(data);
-            let messages = jsonData.messages[key.remoteJid];
-            let msg;
-
-            if (messages) {
-                for (let i = 0; i < messages.length; i++) {
-                    if (messages[i].key.id === key.id) {
-                        msg = messages[i];
-                        break;
+            // ============================================
+            // 📌 ANTI-FEATURES EXECUTION (Kwanza kabla ya commands)
+            // ============================================
+            if (verifGroupe && !superUser && !verifAdmin && verifZokouAdmin) {
+                try {
+                    // Execute in order
+                    if (await handleAntiLink(origineMessage, auteurMessage, verifAdmin, ms, texte)) {
+                        // Link deleted, stop processing
+                        return;
                     }
+                    
+                    if (await handleAntiTag(origineMessage, auteurMessage, verifAdmin, ms)) {
+                        // Tag deleted, stop processing
+                        return;
+                    }
+                    
+                    if (await handleAntiMedia(origineMessage, auteurMessage, verifAdmin, ms)) {
+                        // Media deleted, stop processing
+                        return;
+                    }
+                    
+                    if (await handleAntiSpam(origineMessage, auteurMessage, verifAdmin, ms)) {
+                        // Spam deleted, stop processing
+                        return;
+                    }
+                    
+                    if (await handleAntiBug(origineMessage, auteurMessage, verifAdmin, ms)) {
+                        // Bug message deleted, stop processing
+                        return;
+                    }
+                } catch (e) {
+                    console.log('Anti-features error:', e);
                 }
             }
 
-            if(!msg || msg === 'undefined') {
-                console.log('Message non trouver');
-                return;
-            }
+            // ============================================
+            // 📌 ANTI-DELETE MESSAGE (Iliyorekebishwa bila repondre)
+            // ============================================
+            try {
+                const antideleteSettings = (() => {
+                    try {
+                        const data = fs.readFileSync('./database/antidelete.json', 'utf8');
+                        return JSON.parse(data);
+                    } catch {
+                        return { global: { enabled: conf.ADM?.toLowerCase() === 'yes' } };
+                    }
+                })();
 
-            // Send to owner's inbox
-            const ownerJid = conf.NUMERO_OWNER.replace(/[^0-9]/g, '') + '@s.whatsapp.net';
-            
-            let chatType = key.remoteJid.endsWith('@g.us') ? '𝙶𝚛𝚘𝚞𝚙' : '𝙿𝚛𝚒𝚟𝚊𝚝𝚎';
-            let chatName = key.remoteJid.endsWith('@g.us') ? (await zk.groupMetadata(key.remoteJid).catch(() => ({})))?.subject || 'Unknown Group' : 'Private Chat';
-            
-            await zk.sendMessage(ownerJid, {
-                image: { url: './media/deleted-message.jpg' },
-                caption: `┏━❑ 𝙰𝙽𝚃𝙸-𝙳𝙴𝙻𝙴𝚃𝙴 ━━━━━━━━━
+                if(ms.message.protocolMessage && ms.message.protocolMessage.type === 0 && antideleteSettings.global?.enabled) {
+                    if(ms.key.fromMe || ms.message.protocolMessage.key.fromMe) { 
+                        console.log('Message supprimer me concernant'); 
+                        return; 
+                    }
+
+                    console.log('🗑️ Message deleted detected');
+                    let key = ms.message.protocolMessage.key;
+
+                    try {
+                        let st = './store.json';
+                        if (!fs.existsSync(st)) return;
+                        
+                        const data = fs.readFileSync(st, 'utf8');
+                        const jsonData = JSON.parse(data);
+                        let messages = jsonData.messages[key.remoteJid];
+                        let msg;
+
+                        if (messages) {
+                            for (let i = 0; i < messages.length; i++) {
+                                if (messages[i].key.id === key.id) {
+                                    msg = messages[i];
+                                    break;
+                                }
+                            }
+                        }
+
+                        if(!msg || msg === 'undefined') {
+                            console.log('Message non trouver');
+                            return;
+                        }
+
+                        const ownerJid = conf.NUMERO_OWNER.replace(/[^0-9]/g, '') + '@s.whatsapp.net';
+                        
+                        let chatType = key.remoteJid.endsWith('@g.us') ? '𝙶𝚛𝚘𝚞𝚙' : '𝙿𝚛𝚒𝚟𝚊𝚝𝚎';
+                        let chatName = key.remoteJid.endsWith('@g.us') ? (await zk.groupMetadata(key.remoteJid).catch(() => ({})))?.subject || 'Unknown Group' : 'Private Chat';
+                        
+                        await zk.sendMessage(ownerJid, {
+                            image: { url: './media/deleted-message.jpg' },
+                            caption: `┏━❑ 𝙰𝙽𝚃𝙸-𝙳𝙴𝙻𝙴𝚃𝙴 ━━━━━━━━━
 ┃ 🔥 *Message Deleted Detected!*
 ┃ 
 ┃ 👤 *From:* @${msg.key.participant?.split('@')[0] || 'Unknown'}
@@ -492,18 +656,19 @@ try {
 ┃ 📋 *Deleted Message Content:*
 ┗━━━━━━━━━━━━━━━━━━━━
 > © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`,
-                mentions: msg.key.participant ? [msg.key.participant] : []
-            }, { quoted: fkontak });
+                            mentions: msg.key.participant ? [msg.key.participant] : []
+                        }, { quoted: fkontak });
 
-            await zk.sendMessage(ownerJid, { forward: msg }, { quoted: fkontak });
+                        await zk.sendMessage(ownerJid, { forward: msg }, { quoted: fkontak });
 
-        } catch (e) {
-            console.log('Antidelete error:', e);
-        }
-    }
-} catch (e) {
-    console.log('Antidelete system error:', e);
-}
+                    } catch (e) {
+                        console.log('Antidelete error:', e);
+                    }
+                }
+            } catch (e) {
+                console.log('Antidelete system error:', e);
+            }
+
             // ============================================
             // 📌 AUTO-STATUS HANDLER
             // ============================================
@@ -591,86 +756,80 @@ try {
                 }
             } catch (error) {}
 
-    // ============================================
-// 📌 CHATBOT AI SYSTEM (Inatumia API)
-// ============================================
-try {
-    // Load chatbot settings
-    const chatbotSettings = (() => {
-        try {
-            const data = fs.readFileSync('./database/chatbot.json', 'utf8');
-            return JSON.parse(data);
-        } catch {
-            return { global: { enabled: false } };
-        }
-    })();
-
-    // If chatbot is enabled, message is in private chat, and not a command
-    if (chatbotSettings.global?.enabled && 
-        !verifGroupe && 
-        !verifCom && 
-        texte && 
-        !ms.key.fromMe) {
-        
-        console.log('🤖 Chatbot AI processing message:', texte);
-        
-        // Send typing indicator
-        await zk.sendPresenceUpdate('composing', origineMessage);
-        
-        try {
-            // Call AI API
-            const apiUrl = `https://api.yupra.my.id/api/ai/gpt5?text=${encodeURIComponent(texte.trim())}`;
-            
-            const response = await axios.get(apiUrl, {
-                timeout: 30000,
-                headers: {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-                }
-            });
-
-            let aiResponse = '';
-            
-            // Parse response
-            if (response.data) {
-                if (typeof response.data === 'string') {
-                    aiResponse = response.data;
-                } else if (response.data.result) {
-                    aiResponse = response.data.result;
-                } else if (response.data.message) {
-                    aiResponse = response.data.message;
-                } else if (response.data.response) {
-                    aiResponse = response.data.response;
-                } else if (response.data.data) {
-                    aiResponse = response.data.data;
-                } else {
-                    aiResponse = JSON.stringify(response.data);
-                }
-            }
-
-            if (aiResponse) {
-                await zk.sendMessage(origineMessage, {
-                    text: `SILA AI ${aiResponse}`,
-                    contextInfo: {
-                        mentionedJid: [auteurMessage],
-                        forwardingScore: 999,
-                        isForwarded: true,
-                        forwardedNewsletterMessageInfo: {
-                            newsletterJid: '120363402325089913@newsletter',
-                            newsletterName: '© 𝚂𝙸𝙻𝙰 𝙼𝙳',
-                            serverMessageId: 143,
-                        }
+            // ============================================
+            // 📌 CHATBOT AI SYSTEM
+            // ============================================
+            try {
+                const chatbotSettings = (() => {
+                    try {
+                        const data = fs.readFileSync('./database/chatbot.json', 'utf8');
+                        return JSON.parse(data);
+                    } catch {
+                        return { global: { enabled: false } };
                     }
-                }, { quoted: ms });
-            } else {
-                throw new Error('Empty response');
-            }
-            
-        } catch (apiError) {
-            console.error('Chatbot API Error:', apiError.message);
-            
-            // Fallback response
-            await zk.sendMessage(origineMessage, {
-                text: `┏━❑ 𝙲𝙷𝙰𝚃𝙱𝙾𝚃 𝙰𝙸 ━━━━━━━━━
+                })();
+
+                if (chatbotSettings.global?.enabled && 
+                    !verifGroupe && 
+                    !verifCom && 
+                    texte && 
+                    !ms.key.fromMe) {
+                    
+                    console.log('🤖 Chatbot AI processing message:', texte);
+                    
+                    await zk.sendPresenceUpdate('composing', origineMessage);
+                    
+                    try {
+                        const apiUrl = `https://api.yupra.my.id/api/ai/gpt5?text=${encodeURIComponent(texte.trim())}`;
+                        
+                        const response = await axios.get(apiUrl, {
+                            timeout: 30000,
+                            headers: {
+                                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                            }
+                        });
+
+                        let aiResponse = '';
+                        
+                        if (response.data) {
+                            if (typeof response.data === 'string') {
+                                aiResponse = response.data;
+                            } else if (response.data.result) {
+                                aiResponse = response.data.result;
+                            } else if (response.data.message) {
+                                aiResponse = response.data.message;
+                            } else if (response.data.response) {
+                                aiResponse = response.data.response;
+                            } else if (response.data.data) {
+                                aiResponse = response.data.data;
+                            } else {
+                                aiResponse = JSON.stringify(response.data);
+                            }
+                        }
+
+                        if (aiResponse) {
+                            await zk.sendMessage(origineMessage, {
+                                text: `SILA AI ${aiResponse}`,
+                                contextInfo: {
+                                    mentionedJid: [auteurMessage],
+                                    forwardingScore: 999,
+                                    isForwarded: true,
+                                    forwardedNewsletterMessageInfo: {
+                                        newsletterJid: '120363402325089913@newsletter',
+                                        newsletterName: '© 𝚂𝙸𝙻𝙰 𝙼𝙳',
+                                        serverMessageId: 143,
+                                    }
+                                }
+                            }, { quoted: ms });
+                        } else {
+                            throw new Error('Empty response');
+                        }
+                        
+                    } catch (apiError) {
+                        console.error('Chatbot API Error:', apiError.message);
+                        
+                        await zk.sendMessage(origineMessage, {
+                            text: `┏━❑ 𝙲𝙷𝙰𝚃𝙱𝙾𝚃 𝙰𝙸 ━━━━━━━━━
 ┃ ⚠️ 𝙼𝚊𝚊𝚏𝚊, 𝚜𝚒𝚠𝚎𝚣𝚊 𝚔𝚞𝚙𝚊𝚝𝚊 𝚓𝚒𝚋𝚞 𝚔𝚠𝚊 𝚜𝚊𝚜𝚊.
 ┃ 
 ┃ 📋 *𝚂𝚊𝚋𝚊𝚋:* ${apiError.message}
@@ -678,294 +837,18 @@ try {
 ┃ 🔄 𝚃𝚊𝚛𝚝𝚊𝚛𝚒𝚊 𝚓𝚊𝚛𝚒𝚋𝚞 𝚝𝚎𝚗𝚊 𝚋𝚊𝚊𝚍𝚊𝚎.
 ┗━━━━━━━━━━━━━━━━━━━━
 > © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`,
-                contextInfo: {
-                    mentionedJid: [auteurMessage]
-                }
-            }, { quoted: ms });
-        }
-        
-        // Stop typing
-        await zk.sendPresenceUpdate('paused', origineMessage);
-    }
-} catch (e) {
-    console.log('Chatbot system error:', e);
-}        
-                   
-// ============================================
-// 📌 ANTILINK SYSTEM (Imetengwa nje - inatumia database)
-// ============================================
-try {
-    // Load antilink settings
-    const antilinkSettings = (() => {
-        try {
-            const data = fs.readFileSync('./database/antilink.json', 'utf8');
-            return JSON.parse(data);
-        } catch {
-            return {};
-        }
-    })();
-
-    const antilinkEnabled = antilinkSettings[origineMessage]?.enabled || false;
-    const antilinkAction = antilinkSettings[origineMessage]?.action || 'delete';
-    
-    if (texte && texte.match(/(https?:\/\/[^\s]+)|(www\.[^\s]+)|([a-zA-Z0-9-]+\.(com|org|net|gov|edu|info|xyz|io|co|tk|ml|ga|cf|ph|link|xyz|site|online|tech|store|blog|me|tv|app|dev|club|top|live|chat|group|ws|cc|us|biz|uk|de|fr|jp|cn|br|in|au|ru|it|es|nl|se|no|dk|fi|pl|cz|hu|gr|il|kr|sg|hk|my|th|vn|pk|bd|np|lk|mm|kh|la|tw|ph|id|za|ng|ke|tz|ug|gh|zm|zw|mw|na|bw|sz|ls|mu|km|sc|mg|mw|zm|zw|na|bw))(\/[^\s]*)?/gi) && verifGroupe && antilinkEnabled) {
-        console.log("🔗 Lien detecté");
-        
-        if(superUser || verifAdmin || !verifZokouAdmin) { 
-            console.log('je fais rien'); 
-            return;
-        }
-
-        const key = {
-            remoteJid: origineMessage,
-            fromMe: false,
-            id: ms.key.id,
-            participant: auteurMessage
-        };
-
-        if (antilinkAction === 'remove') {
-            let txt = `┏━❑ 𝙰𝙽𝚃𝙸𝙻𝙸𝙽𝙺 𝙰𝙲𝚃𝙸𝙾𝙽 ━━━━━━━━━
-┃ 🔗 *Link Detected!*
-┃ 
-┃ 🚫 @${auteurMessage.split("@")[0]} 
-┃ ⚠️ *Message deleted & member removed*
-┗━━━━━━━━━━━━━━━━━━━━
-> © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`;
-
-            await zk.sendMessage(origineMessage, {
-                text: txt,
-                mentions: [auteurMessage],
-                contextInfo: {
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363402325089913@newsletter',
-                        newsletterName: "➤®𝐒𝐈𝐋𝐀-𝐌𝐃",
-                        serverMessageId: 143,
-                    },
-                    forwardingScore: 999,
-                    externalAdReply: {
-                        title: "⭕ Link Detected & Removed",
-                        mediaType: 1,
-                        previewType: 0,
-                        thumbnailUrl: randomNjabulourl,
-                        renderLargerThumbnail: false,
-                    },
-                }
-            }, { quoted: fkontak });
-
-            try {
-                await zk.groupParticipantsUpdate(origineMessage, [auteurMessage], "remove");
-            } catch (e) {
-                console.log("antilien error: " + e);
-            }
-            await zk.sendMessage(origineMessage, { delete: key });
-
-        } else if (antilinkAction === 'delete') {
-            let txt = `┏━❑ 𝙰𝙽𝚃𝙸𝙻𝙸𝙽𝙺 𝚆𝙰𝚁𝙽𝙸𝙽𝙶 ━━━━━━━━━
-┃ 🔗 *Link Detected!*
-┃ 
-┃ ⚠️ @${auteurMessage.split("@")[0]}
-┃ ❌ *Your message has been deleted*
-┃ 📋 *Links are not allowed in this group*
-┗━━━━━━━━━━━━━━━━━━━━
-> © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`;
-
-            await zk.sendMessage(origineMessage, {
-                text: txt,
-                mentions: [auteurMessage],
-                contextInfo: {
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363402325089913@newsletter',
-                        newsletterName: "➤®𝐒𝐈𝐋𝐀-𝐌𝐃",
-                        serverMessageId: 143,
-                    },
-                    forwardingScore: 999,
-                    externalAdReply: {
-                        title: "⭕ Link Detected & Deleted",
-                        mediaType: 1,
-                        previewType: 0,
-                        thumbnailUrl: randomNjabulourl,
-                        renderLargerThumbnail: false,
-                    },
-                }
-            }, { quoted: fkontak });
-
-            await zk.sendMessage(origineMessage, { delete: key });
-
-        } else if(antilinkAction === 'warn') {
-            const {getWarnCountByJID, ajouterUtilisateurAvecWarnCount} = require('./bdd/warn');
-            
-            // Initialize warned users for this group if not exists
-            if (!antilinkSettings[origineMessage].warnedUsers) {
-                antilinkSettings[origineMessage].warnedUsers = {};
-            }
-            
-            let warnCount = antilinkSettings[origineMessage].warnedUsers[auteurMessage] || 0;
-            warnCount++;
-            antilinkSettings[origineMessage].warnedUsers[auteurMessage] = warnCount;
-            
-            // Save updated settings
-            fs.writeFileSync('./database/antilink.json', JSON.stringify(antilinkSettings, null, 2));
-            
-            let warnlimit = conf.WARN_COUNT || 3;
-
-            if (warnCount >= warnlimit) {
-                var kikmsg = `┏━❑ 𝙰𝙽𝚃𝙸𝙻𝙸𝙽𝙺 𝙰𝙲𝚃𝙸𝙾𝙽 ━━━━━━━━━
-┃ 🔗 *Link Detected!*
-┃ 
-┃ 🚫 @${auteurMessage.split("@")[0]}
-┃ ⚠️ *You have been removed*
-┃ 📊 *Reason: Reached warn limit (${warnlimit})*
-┗━━━━━━━━━━━━━━━━━━━━
-> © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`;
-
-                await zk.sendMessage(origineMessage, {
-                    text: kikmsg,
-                    mentions: [auteurMessage]
-                }, { quoted: fkontak });
-
-                await zk.groupParticipantsUpdate(origineMessage, [auteurMessage], "remove");
-                await zk.sendMessage(origineMessage, { delete: key });
-                
-                // Reset warnings after removal
-                delete antilinkSettings[origineMessage].warnedUsers[auteurMessage];
-                fs.writeFileSync('./database/antilink.json', JSON.stringify(antilinkSettings, null, 2));
-                
-            } else {
-                var rest = warnlimit - warnCount;
-                var msg = `┏━❑ 𝙰𝙽𝚃𝙸𝙻𝙸𝙽𝙺 𝚆𝙰𝚁𝙽𝙸𝙽𝙶 ━━━━━━━━━
-┃ 🔗 *Link Detected!*
-┃ 
-┃ ⚠️ @${auteurMessage.split("@")[0]}
-┃ 📊 *Warning: ${warnCount}/${warnlimit}*
-┃ ⚡ *Remaining: ${rest} warnings*
-┗━━━━━━━━━━━━━━━━━━━━
-> © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`;
-
-                await zk.sendMessage(origineMessage, {
-                    text: msg,
-                    mentions: [auteurMessage]
-                }, { quoted: fkontak });
-                await zk.sendMessage(origineMessage, { delete: key });
-            }
-        }
-    }
-} catch (e) {
-    console.log("antilink error: " + e);
-}
-            // ============================================
-            // 📌 ANTIBOT SYSTEM
-            // ============================================
-            try {
-                const botMsg = ms.key?.id?.startsWith('BAES') && ms.key?.id?.length === 16;
-                const baileysMsg = ms.key?.id?.startsWith('BAE5') && ms.key?.id?.length === 16;
-                
-                if (botMsg || baileysMsg) {
-                    if (mtype === 'reactionMessage') { 
-                        console.log('Je ne reagis pas au reactions'); 
-                        return;
+                            contextInfo: {
+                                mentionedJid: [auteurMessage]
+                            }
+                        }, { quoted: ms });
                     }
                     
-                    const antibotactiver = await atbverifierEtatJid(origineMessage);
-                    if(!antibotactiver) { return; }
-                    if(verifAdmin || auteurMessage === idBot) { 
-                        console.log('je fais rien'); 
-                        return;
-                    }
-
-                    const key = {
-                        remoteJid: origineMessage,
-                        fromMe: false,
-                        id: ms.key.id,
-                        participant: auteurMessage
-                    };
-
-                    var action = await atbrecupererActionJid(origineMessage);
-
-                    if (action === 'remove') {
-                        var txt = `┏━❑ 𝙰𝙽𝚃𝙸𝙱𝙾𝚃 𝙰𝙲𝚃𝙸𝙾𝙽 ━━━━━━━━━
-┃ 🤖 *Bot Detected!*
-┃ 
-┃ 🚫 @${auteurMessage.split("@")[0]}
-┃ ⚠️ *Message deleted & member removed*
-┗━━━━━━━━━━━━━━━━━━━━
-> © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`;
-
-                        await zk.sendMessage(origineMessage, {
-                            text: txt,
-                            mentions: [auteurMessage]
-                        }, { quoted: fkontak });
-
-                        try {
-                            await zk.groupParticipantsUpdate(origineMessage, [auteurMessage], "remove");
-                        } catch (e) {
-                            console.log("antibot error: " + e);
-                        }
-                        await zk.sendMessage(origineMessage, { delete: key });
-
-                    } else if (action === 'delete') {
-                        var txt = `┏━❑ 𝙰𝙽𝚃𝙸𝙱𝙾𝚃 𝚆𝙰𝚁𝙽𝙸𝙽𝙶 ━━━━━━━━━
-┃ 🤖 *Bot Detected!*
-┃ 
-┃ ⚠️ @${auteurMessage.split("@")[0]}
-┃ ❌ *Your message has been deleted*
-┃ 📋 *Bots are not allowed in this group*
-┗━━━━━━━━━━━━━━━━━━━━
-> © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`;
-
-                        await zk.sendMessage(origineMessage, {
-                            text: txt,
-                            mentions: [auteurMessage]
-                        }, { quoted: fkontak });
-                        await zk.sendMessage(origineMessage, { delete: key });
-
-                    } else if(action === 'warn') {
-                        const {getWarnCountByJID, ajouterUtilisateurAvecWarnCount} = require('./bdd/warn');
-                        let warn = await getWarnCountByJID(auteurMessage);
-                        let warnlimit = conf.WARN_COUNT;
-
-                        if (warn >= warnlimit) {
-                            var kikmsg = `┏━❑ 𝙰𝙽𝚃𝙸𝙱𝙾𝚃 𝙰𝙲𝚃𝙸𝙾𝙽 ━━━━━━━━━
-┃ 🤖 *Bot Detected!*
-┃ 
-┃ 🚫 @${auteurMessage.split("@")[0]}
-┃ ⚠️ *You have been removed*
-┃ 📊 *Reason: Reached warn limit (${warnlimit})*
-┗━━━━━━━━━━━━━━━━━━━━
-> © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`;
-
-                            await zk.sendMessage(origineMessage, {
-                                text: kikmsg,
-                                mentions: [auteurMessage]
-                            }, { quoted: fkontak });
-
-                            await zk.groupParticipantsUpdate(origineMessage, [auteurMessage], "remove");
-                            await zk.sendMessage(origineMessage, { delete: key });
-                        } else {
-                            var rest = warnlimit - warn;
-                            var msg = `┏━❑ 𝙰𝙽𝚃𝙸𝙱𝙾𝚃 𝚆𝙰𝚁𝙽𝙸𝙽𝙶 ━━━━━━━━━
-┃ 🤖 *Bot Detected!*
-┃ 
-┃ ⚠️ @${auteurMessage.split("@")[0]}
-┃ 📊 *Warning: ${warn + 1}/${warnlimit}*
-┃ ⚡ *Remaining: ${rest} warnings*
-┗━━━━━━━━━━━━━━━━━━━━
-> © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`;
-
-                            await ajouterUtilisateurAvecWarnCount(auteurMessage);
-                            await zk.sendMessage(origineMessage, {
-                                text: msg,
-                                mentions: [auteurMessage]
-                            }, { quoted: fkontak });
-                            await zk.sendMessage(origineMessage, { delete: key });
-                        }
-                    }
+                    await zk.sendPresenceUpdate('paused', origineMessage);
                 }
-            } catch (er) {
-                console.log('antibot error: ' + er);
-            }
-
+            } catch (e) {
+                console.log('Chatbot system error:', e);
+            }        
+                       
             // ============================================
             // 📌 COMMAND EXECUTION
             // ============================================
@@ -1014,73 +897,73 @@ try {
             }
         });
 
- // ============================================
-// 📌 WELCOME/GOODBYE EVENTS
-// ============================================
-const welcomeSettings = (() => {
-    try {
-        return JSON.parse(fs.readFileSync('./database/welcome.json', 'utf8'));
-    } catch {
-        return {};
-    }
-})();
-
-zk.ev.on('group-participants.update', async (group) => {
-    try {
-        const metadata = await zk.groupMetadata(group.id);
-        const settings = welcomeSettings[group.id] || { welcome: 'off', goodbye: 'off' };
-        const randomThumb = getRandomThumbnail();
-
-        if (group.action === 'add' && settings.welcome === 'on') {
-            let msg = `┏━❑ 𝚆𝙴𝙻𝙲𝙾𝙼𝙴 ━━━━━━━━━\n`;
-            for (let membre of group.participants) {
-                msg += `┃ 👋 @${membre.split("@")[0]}\n`;
+        // ============================================
+        // 📌 WELCOME/GOODBYE EVENTS
+        // ============================================
+        const welcomeSettings = (() => {
+            try {
+                return JSON.parse(fs.readFileSync('./database/welcome.json', 'utf8'));
+            } catch {
+                return {};
             }
-            msg += `┗━━━━━━━━━━━━━━━━━━━━`;
+        })();
 
-            await zk.sendMessage(group.id, {
-                image: { url: randomThumb },
-                caption: msg,
-                mentions: group.participants,
-                contextInfo: {
-                    externalAdReply: {
-                        title: `👋 𝙽𝚎𝚠 𝙼𝚎𝚖𝚋𝚎𝚛`,
-                        body: metadata.subject.substring(0, 30),
-                        mediaType: 1,
-                        previewType: 0,
-                        thumbnailUrl: randomThumb,
-                        renderLargerThumbnail: false,
+        zk.ev.on('group-participants.update', async (group) => {
+            try {
+                const metadata = await zk.groupMetadata(group.id);
+                const settings = welcomeSettings[group.id] || { welcome: 'off', goodbye: 'off' };
+                const randomThumb = njabulox[Math.floor(Math.random() * njabulox.length)];
+
+                if (group.action === 'add' && settings.welcome === 'on') {
+                    let msg = `┏━❑ 𝚆𝙴𝙻𝙲𝙾𝙼𝙴 ━━━━━━━━━\n`;
+                    for (let membre of group.participants) {
+                        msg += `┃ 👋 @${membre.split("@")[0]}\n`;
                     }
-                }
-            }, { quoted: fkontak });
+                    msg += `┗━━━━━━━━━━━━━━━━━━━━`;
 
-        } else if (group.action === 'remove' && settings.goodbye === 'on') {
-            let msg = `┏━❑ 𝙶𝙾𝙾𝙳𝙱𝚈𝙴 ━━━━━━━━━\n`;
-            for (let membre of group.participants) {
-                msg += `┃ 👋 @${membre.split("@")[0]}\n`;
+                    await zk.sendMessage(group.id, {
+                        image: { url: randomThumb },
+                        caption: msg,
+                        mentions: group.participants,
+                        contextInfo: {
+                            externalAdReply: {
+                                title: `👋 𝙽𝚎𝚠 𝙼𝚎𝚖𝚋𝚎𝚛`,
+                                body: metadata.subject.substring(0, 30),
+                                mediaType: 1,
+                                previewType: 0,
+                                thumbnailUrl: randomThumb,
+                                renderLargerThumbnail: false,
+                            }
+                        }
+                    }, { quoted: fkontak });
+
+                } else if (group.action === 'remove' && settings.goodbye === 'on') {
+                    let msg = `┏━❑ 𝙶𝙾𝙾𝙳𝙱𝚈𝙴 ━━━━━━━━━\n`;
+                    for (let membre of group.participants) {
+                        msg += `┃ 👋 @${membre.split("@")[0]}\n`;
+                    }
+                    msg += `┗━━━━━━━━━━━━━━━━━━━━`;
+
+                    await zk.sendMessage(group.id, {
+                        image: { url: randomThumb },
+                        caption: msg,
+                        mentions: group.participants,
+                        contextInfo: {
+                            externalAdReply: {
+                                title: `👋 𝙼𝚎𝚖𝚋𝚎𝚛 𝙻𝚎𝚏𝚝`,
+                                body: metadata.subject.substring(0, 30),
+                                mediaType: 1,
+                                previewType: 0,
+                                thumbnailUrl: randomThumb,
+                                renderLargerThumbnail: false,
+                            }
+                        }
+                    }, { quoted: fkontak });
+                }
+            } catch (e) {
+                console.error('Welcome/Goodbye error:', e);
             }
-            msg += `┗━━━━━━━━━━━━━━━━━━━━`;
-
-            await zk.sendMessage(group.id, {
-                image: { url: randomThumb },
-                caption: msg,
-                mentions: group.participants,
-                contextInfo: {
-                    externalAdReply: {
-                        title: `👋 𝙼𝚎𝚖𝚋𝚎𝚛 𝙻𝚎𝚏𝚝`,
-                        body: metadata.subject.substring(0, 30),
-                        mediaType: 1,
-                        previewType: 0,
-                        thumbnailUrl: randomThumb,
-                        renderLargerThumbnail: false,
-                    }
-                }
-            }, { quoted: fkontak });
-        }
-    } catch (e) {
-        console.error('Welcome/Goodbye error:', e);
-    }
-});
+        });
 
         // ============================================
         // 📌 CRON SETUP
