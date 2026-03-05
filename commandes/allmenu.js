@@ -18,24 +18,71 @@ const fkontak = {
     }
 };
 
-// Get all commands from folder
-const getCommands = () => {
+// Function to extract all nomCom from a file
+const extractCommandsFromFile = (filePath) => {
+    try {
+        const content = fs.readFileSync(filePath, 'utf8');
+        const commands = [];
+        
+        // Regex to find all nomCom occurrences
+        const nomComRegex = /nomCom:\s*['"]([^'"]+)['"]/g;
+        let match;
+        
+        while ((match = nomComRegex.exec(content)) !== null) {
+            commands.push(match[1]);
+        }
+        
+        return commands;
+    } catch (e) {
+        console.log("Error extracting commands from file:", e);
+        return [];
+    }
+};
+
+// Get all commands from all files
+const getAllCommands = () => {
     try {
         const commandsDir = path.join(__dirname);
         const files = fs.readdirSync(commandsDir).filter(f => f.endsWith('.js'));
-
-        const commandList = [];
+        
+        const allCommands = [];
+        const commandDetails = []; // For detailed info
+        
         files.forEach(file => {
-            const name = file.replace('.js', '');
-            if (name !== 'menu' && name !== 'allmenu' && name !== 'menu2') {
-                commandList.push(name);
-            }
+            const filePath = path.join(commandsDir, file);
+            const fileName = file.replace('.js', '');
+            
+            // Skip menu files
+            if (fileName === 'menu' || fileName === 'allmenu' || fileName === 'menu2') return;
+            
+            const commands = extractCommandsFromFile(filePath);
+            
+            // Add each command to the list
+            commands.forEach(cmd => {
+                allCommands.push(cmd);
+                commandDetails.push({
+                    command: cmd,
+                    file: fileName,
+                    category: extractCategory(filePath)
+                });
+            });
         });
-
-        return commandList;
+        
+        return { allCommands, commandDetails };
     } catch (e) {
         console.log("Error reading commands:", e);
-        return [];
+        return { allCommands: [], commandDetails: [] };
+    }
+};
+
+// Extract category from file
+const extractCategory = (filePath) => {
+    try {
+        const content = fs.readFileSync(filePath, 'utf8');
+        const categoryMatch = content.match(/Categorie:\s*['"]([^'"]+)['"]/);
+        return categoryMatch ? categoryMatch[1] : 'General';
+    } catch (e) {
+        return 'General';
     }
 };
 
@@ -44,29 +91,33 @@ const getCommandsByCategory = () => {
     try {
         const commandsDir = path.join(__dirname);
         const files = fs.readdirSync(commandsDir).filter(f => f.endsWith('.js'));
-
+        
         const categories = {};
-
+        
         files.forEach(file => {
-            const name = file.replace('.js', '');
-            if (name === 'menu' || name === 'allmenu' || name === 'menu2') return;
-
-            let category = 'General';
-            try {
-                const commandPath = path.join(commandsDir, file);
-                const commandContent = fs.readFileSync(commandPath, 'utf8');
-                const categoryMatch = commandContent.match(/Categorie:\s*['"]([^'"]+)['"]/);
-                if (categoryMatch && categoryMatch[1]) {
-                    category = categoryMatch[1];
-                }
-            } catch (e) {}
-
+            const filePath = path.join(commandsDir, file);
+            const fileName = file.replace('.js', '');
+            
+            if (fileName === 'menu' || fileName === 'allmenu' || fileName === 'menu2') return;
+            
+            const commands = extractCommandsFromFile(filePath);
+            const category = extractCategory(filePath);
+            
             if (!categories[category]) {
                 categories[category] = [];
             }
-            categories[category].push(name);
+            
+            // Add all commands from this file to the category
+            commands.forEach(cmd => {
+                categories[category].push(cmd);
+            });
         });
-
+        
+        // Sort commands within each category
+        for (let cat in categories) {
+            categories[cat].sort();
+        }
+        
         return categories;
     } catch (e) {
         console.log("Error reading commands by category:", e);
@@ -86,7 +137,7 @@ async(dest, zk, commandeOptions) => {
 try{
     const { ms, repondre, prefixe, nomAuteurMessage } = commandeOptions;
 
-    const allCommands = getCommands();
+    const { allCommands, commandDetails } = getAllCommands();
     const categories = getCommandsByCategory();
     const categoryNames = Object.keys(categories);
 
@@ -101,16 +152,39 @@ try{
     let commandsText = `┏━❑ 𝙰𝙻𝙻 𝙲𝙾𝙼𝙼𝙰𝙽𝙳𝚂 ━━━━━━━━━
 ┃ 📊 *𝚃𝚘𝚝𝚊𝚕:* ${allCommands.length}
 ┃ 👥 *𝙲𝚊𝚝𝚎𝚐𝚘𝚛𝚒𝚎𝚜:* ${categoryNames.length}
+┃ 📁 *𝙵𝚒𝚕𝚎𝚜:* ${commandDetails.length ? 'Multiple' : '0'}
 ┗━━━━━━━━━━━━━━━━━━━━\n\n`;
 
     if (categoryNames.length > 0) {
         for (const category of categoryNames.sort()) {
             commandsText += `┏━❑ *${category.toUpperCase()}* ━━━━━━━━━\n`;
-            categories[category].sort().forEach((cmd, index) => {
+            categories[category].forEach((cmd, index) => {
                 commandsText += `┃ ${index + 1}. ${prefixe}${cmd}\n`;
             });
             commandsText += `┗━━━━━━━━━━━━━━━━━━━━\n\n`;
         }
+    } else {
+        commandsText += `┃ ❌ No commands found\n┗━━━━━━━━━━━━━━━━━━━━\n\n`;
+    }
+
+    // Optional: Show detailed breakdown by file
+    const showFileBreakdown = false; // Set to true if you want to see which commands are in which files
+    
+    if (showFileBreakdown) {
+        commandsText += `┏━❑ 𝙱𝚈 𝙵𝙸𝙻𝙴 ━━━━━━━━━\n`;
+        const files = fs.readdirSync(path.join(__dirname)).filter(f => f.endsWith('.js') && !f.includes('menu'));
+        
+        files.forEach(file => {
+            const filePath = path.join(__dirname, file);
+            const commands = extractCommandsFromFile(filePath);
+            if (commands.length > 0) {
+                commandsText += `┃ 📄 ${file} (${commands.length}):\n`;
+                commands.forEach((cmd, i) => {
+                    commandsText += `┃   ${i+1}. ${prefixe}${cmd}\n`;
+                });
+            }
+        });
+        commandsText += `┗━━━━━━━━━━━━━━━━━━━━\n\n`;
     }
 
     const buttonMessage = {
