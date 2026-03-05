@@ -1025,7 +1025,7 @@ setTimeout(() => {
         setInterval(async () => {
             if (conf.AUTO_BIO === "yes") {
                 const currentDateTime = getCurrentDateTime();
-                const bioText = `𝐒𝐈𝐋𝐀 𝐌𝐃 ᴅᴇᴠɪᴄᴇ 📅 ${currentDateTime} ⏰`;
+                const bioText = `𝐒𝐈𝐋𝐀 𝐌𝐃 ${currentDateTime} ⏰`;
                 await zk.updateProfileStatus(bioText);
                 console.log(`Updated Bio: ${bioText}`);
             }
