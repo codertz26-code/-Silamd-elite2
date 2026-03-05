@@ -2,36 +2,36 @@ const { silamd } = require("../silamd/sila");
 const fs = require('fs-extra');
 const path = require('path');
 
-// Anti-features storage path
-const antiFeaturesPath = path.join(__dirname, '../database/antifeatures.json');
+// Antilink storage path
+const antilinkPath = path.join(__dirname, '../database/antilink.json');
 
-// Load anti-features settings
-const loadAntiFeatures = () => {
+// Load antilink settings
+const loadAntilink = () => {
     try {
-        if (fs.existsSync(antiFeaturesPath)) {
-            return JSON.parse(fs.readFileSync(antiFeaturesPath, 'utf8'));
+        if (fs.existsSync(antilinkPath)) {
+            return JSON.parse(fs.readFileSync(antilinkPath, 'utf8'));
         }
     } catch (e) {
-        console.log('Error loading antiall:', e);
+        console.log('Error loading antilink:', e);
     }
     return {};
 };
 
-// Save anti-features settings
-const saveAntiFeatures = (data) => {
+// Save antilink settings
+const saveAntilink = (data) => {
     try {
         fs.ensureDirSync(path.join(__dirname, '../database'));
-        fs.writeFileSync(antiFeaturesPath, JSON.stringify(data, null, 2));
+        fs.writeFileSync(antilinkPath, JSON.stringify(data, null, 2));
     } catch (e) {
-        console.log('Error saving antiall:', e);
+        console.log('Error saving antilink:', e);
     }
 };
 
-sila({
-    nomCom: 'antiall',
-    alias: ['antiall', 'anti-all', 'antitotal'],
-    reaction: '🛡️',
-    desc: 'Enable/disable all anti-features at once',
+silamd({
+    nomCom: 'antilink',
+    alias: ['antilink', 'antilien', 'antilinks'],
+    reaction: '🔗',
+    desc: 'Enable/disable anti-link feature in group',
     Categorie: 'Group',
     fromMe: 'true'
 },
@@ -50,76 +50,87 @@ async (dest, zk, commandeOptions) => {
         }
 
         const action = args[0] ? args[0].toLowerCase() : '';
+        const option = args[1] ? args[1].toLowerCase() : '';
         
-        if (!action || (action !== 'on' && action !== 'off' && action !== 'status')) {
-            return repondre(`┏━❑ 𝙰𝙽𝚃𝙸𝙰𝙻𝙻 𝙷𝙴𝙻𝙿 ━━━━━━━━━
+        if (!action || (action !== 'on' && action !== 'off' && action !== 'status' && action !== 'action')) {
+            return repondre(`┏━❑ 𝙰𝙽𝚃𝙸𝙻𝙸𝙽𝙺 𝙷𝙴𝙻𝙿 ━━━━━━━━━
 ┃ 📝 *Usage:*
-┃ ${prefixe}antiall on  (Turn on ALL)
-┃ ${prefixe}antiall off (Turn off ALL)
-┃ ${prefixe}antiall status
+┃ ${prefixe}antilink on
+┃ ${prefixe}antilink off
+┃ ${prefixe}antilink status
+┃ ${prefixe}antilink action delete
+┃ ${prefixe}antilink action warn
 ┃ 
-┃ 📋 *Features included:*
-┃ • Anti-Tag
-┃ • Anti-Media
-┃ • Anti-Spam
-┃ • Anti-Bug
+┃ 📋 *Actions:*
+┃ • delete - Delete link only
+┃ • warn - Delete + warn (removes after 3 warns)
 ┗━━━━━━━━━━━━━━━━━━━━
 > © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`);
         }
 
         // Load current settings
-        const allSettings = loadAntiFeatures();
+        const allSettings = loadAntilink();
         const groupId = dest;
         
         if (!allSettings[groupId]) {
-            allSettings[groupId] = {};
+            allSettings[groupId] = {
+                enabled: false,
+                action: 'delete',
+                warnedUsers: {}
+            };
+        }
+
+        // Handle action change
+        if (action === 'action') {
+            if (option !== 'delete' && option !== 'warn') {
+                return repondre(`┏━❑ 𝙴𝚁𝚁𝙾𝚁 ━━━━━━━━━
+┃ ❌ Invalid action! Use: delete or warn
+┗━━━━━━━━━━━━━━━━━━━━`);
+            }
+            
+            allSettings[groupId].action = option;
+            saveAntilink(allSettings);
+            
+            return repondre(`┏━❑ 𝙰𝙽𝚃𝙸𝙻𝙸𝙽𝙺 ━━━━━━━━━
+┃ ✅ Anti-link action set to: *${option.toUpperCase()}*
+┃ 📁 *Group:* ${groupId}
+┗━━━━━━━━━━━━━━━━━━━━
+> © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`);
         }
 
         // Handle status check
         if (action === 'status') {
-            let features = '';
-            features += `\n┃ • Anti-Tag: ${allSettings[groupId].antitag ? '✅' : '❌'}`;
-            features += `\n┃ • Anti-Media: ${allSettings[groupId].antimedia ? '✅' : '❌'}`;
-            features += `\n┃ • Anti-Spam: ${allSettings[groupId].antispam ? '✅' : '❌'}`;
-            features += `\n┃ • Anti-Bug: ${allSettings[groupId].antibug ? '✅' : '❌'}`;
+            const status = allSettings[groupId].enabled ? '🟢 ENABLED' : '🔴 DISABLED';
+            const currentAction = allSettings[groupId].action || 'delete';
             
-            return repondre(`┏━❑ 𝙰𝙽𝚃𝙸𝙰𝙻𝙻 𝚂𝚃𝙰𝚃𝚄𝚂 ━━━━━━━━━
+            return repondre(`┏━❑ 𝙰𝙽𝚃𝙸𝙻𝙸𝙽𝙺 𝚂𝚃𝙰𝚃𝚄𝚂 ━━━━━━━━━
+┃ 📊 *Status:* ${status}
+┃ ⚙️ *Action:* ${currentAction.toUpperCase()}
 ┃ 📁 *Group:* ${groupId}
-┃ 📋 *Features:${features}
 ┃ 
-┃ 📝 *Use ${prefixe}antiall on/off to toggle all*
+┃ 📝 *Use ${prefixe}antilink on/off to change*
 ┗━━━━━━━━━━━━━━━━━━━━
 > © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`);
         }
 
-        // Enable/disable ALL features
-        const newStatus = (action === 'on');
-        
-        // Set all anti-features
-        allSettings[groupId].antitag = newStatus;
-        allSettings[groupId].antimedia = newStatus;
-        allSettings[groupId].antispam = newStatus;
-        allSettings[groupId].antibug = newStatus;
-        
-        saveAntiFeatures(allSettings);
+        // Enable/disable
+        allSettings[groupId].enabled = (action === 'on');
+        saveAntilink(allSettings);
 
-        const statusEmoji = newStatus ? '🟢' : '🔴';
-        const statusText = newStatus ? 'ENABLED' : 'DISABLED';
+        const statusEmoji = action === 'on' ? '🟢' : '🔴';
+        const statusText = action === 'on' ? 'ENABLED' : 'DISABLED';
 
-        repondre(`┏━❑ 𝙰𝙽𝚃𝙸𝙰𝙻𝙻 ━━━━━━━━━
-┃ ${statusEmoji} *All Anti-Features ${statusText}!*
+        repondre(`┏━❑ 𝙰𝙽𝚃𝙸𝙻𝙸𝙽𝙺 ━━━━━━━━━
+┃ ${statusEmoji} *Anti-Link ${statusText}!*
+┃ ⚙️ *Action:* ${allSettings[groupId].action?.toUpperCase() || 'DELETE'}
 ┃ 📁 *Group:* ${groupId}
 ┃ 
-┃ ✅ Successfully turned ${action}:
-┃ • Anti-Tag: ${newStatus ? '✅' : '❌'}
-┃ • Anti-Media: ${newStatus ? '✅' : '❌'}
-┃ • Anti-Spam: ${newStatus ? '✅' : '❌'}
-┃ • Anti-Bug: ${newStatus ? '✅' : '❌'}
+┃ ✅ Successfully turned ${action}!
 ┗━━━━━━━━━━━━━━━━━━━━
 > © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`);
 
     } catch (e) {
-        console.log('❌ Antiall Command Error:', e);
+        console.log('❌ Antilink Command Error:', e);
         repondre(`┏━❑ 𝙴𝚁𝚁𝙾𝚁 ━━━━━━━━━
 ┃ ❌ ${e.message}
 ┗━━━━━━━━━━━━━━━━━━━━
