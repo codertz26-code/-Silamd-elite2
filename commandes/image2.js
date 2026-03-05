@@ -1,9 +1,9 @@
-const { silamd } = require("../silamd/sila");
+const { sila } = require("../silamd/sila");
 const gis = require("g-i-s");
 const axios = require("axios");
 const conf = require(__dirname + "/../set");
 
-// FakeVCard kwa ajili ya reply (kama ilivyo kwenye alive.js)
+// FakeVCard kwa ajili ya reply
 const fkontak = {
     "key": {
         "participant": '0@s.whatsapp.net',
@@ -16,20 +16,11 @@ const fkontak = {
     }
 };
 
-// ── Random image list for thumbnail ─────────────────────────────────────────────
-const njabulox = [
-  "https://files.catbox.moe/xjeyjh.jpg",
-  "https://files.catbox.moe/mh36c7.jpg",
-  "https://files.catbox.moe/u6v5ir.jpg",
-  "https://files.catbox.moe/bnb3vx.jpg",
-];
-const randomNjabulourl = njabulox[Math.floor(Math.random() * njabulox.length)];
-
-// ── Image search command with carousel cards ─────────────────────────────────
+// ── Image search command ─────────────────────────────────
 sila({
-    nomCom: '𝚒𝚖𝚊𝚐𝚎2',
+    nomCom: 'image2',
     alias: ['image2', 'images2', 'img', 'pic'],
-    desc: 'Search for images (carousel view)',
+    desc: 'Search for images',
     Categorie: 'Images',
     reaction: '🖼️',
     fromMe: 'false'
@@ -38,17 +29,21 @@ sila({
 
     if (!arg[0]) {
         return repondre(`┏━❑ 𝙸𝙼𝙰𝙶𝙴 𝚂𝙴𝙰𝚁𝙲𝙷 ━━━━━━━━━
-┃ 🖼️ *Please provide a search term!*
-┃ 📝 Example: *${conf.prefix}𝚒𝚖𝚊𝚐𝚎 beautiful nature*
+┃ 🖼️ *Please provide an image name!*
+┃ 📝 *Example:* *${conf.prefix}image2 beautiful nature*
 ┗━━━━━━━━━━━━━━━━━━━━
 > © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`);
     }
 
     const searchTerm = arg.join(" ");
-    const loadingMsg = await repondre(`┏━❑ 𝙸𝙼𝙰𝙶𝙴 𝚂𝙴𝙰𝚁𝙲𝙷 ━━━━━━━━━
-┃ ⏳ *Searching for:* ${searchTerm}
+    
+    // Send loading message
+    await zk.sendMessage(dest, {
+        text: `┏━❑ 𝙸𝙼𝙰𝙶𝙴 𝚂𝙴𝙰𝚁𝙲𝙷 ━━━━━━━━━
+┃ ⏳ *sila is searching for:* ${searchTerm}
 ┃ 🖼️ *Please wait...*
-┗━━━━━━━━━━━━━━━━━━━━`);
+┗━━━━━━━━━━━━━━━━━━━━`
+    }, { quoted: fkontak });
 
     try {
         const results = await new Promise((resolve, reject) => {
@@ -59,126 +54,51 @@ sila({
         });
 
         if (!results || results.length === 0) {
-            await repondre(`┏━❑ 𝙸𝙼𝙰𝙶𝙴 𝚂𝙴𝙰𝚁𝙲𝙷 ━━━━━━━━━
+            return repondre(`┏━❑ 𝙸𝙼𝙰𝙶𝙴 𝚂𝙴𝙰𝚁𝙲𝙷 ━━━━━━━━━
 ┃ ❌ *No images found for:* ${searchTerm}
 ┗━━━━━━━━━━━━━━━━━━━━
 > © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`);
-            return;
         }
 
-        // Delete loading message
-        try {
-            await zk.deleteMessage(dest, loadingMsg.key);
-        } catch (e) {}
-
-        // Create carousel cards (maximum 10 images)
-        const cards = [];
-        const maxImages = Math.min(results.length, 10);
-
+        // Create vCard contacts for scrolling
+        const contacts = [];
+        const maxImages = Math.min(results.length, 10); // Maximum 10 images
+        
         for (let i = 0; i < maxImages; i++) {
             const result = results[i];
             if (!result || !result.url) continue;
-
-            // Create a card for each image
-            cards.push({
-                header: `🖼️ *Image ${i + 1}/${maxImages}*`,
-                body: {
-                    text: `┏━❑ 𝙸𝙼𝙰𝙶𝙴 𝚁𝙴𝚂𝚄𝙻𝚃 ━━━━━━━━━
-┃ 📌 *Title:* ${searchTerm}
-┃ 📏 *Size:* ${result.width || 'Unknown'}x${result.height || 'Unknown'}
-┃ 🎨 *Quality:* High HD
-┃ 🔗 *URL:* ${result.url}
-┗━━━━━━━━━━━━━━━━━━━━`
-                },
-                media: {
-                    image: {
-                        url: result.url
-                    }
-                },
-                buttons: [
-                    {
-                        name: "cta_copy",
-                        buttonParamsJson: JSON.stringify({
-                            display_text: "📋 Copy URL",
-                            id: "copy_url",
-                            copy_code: result.url
-                        })
-                    },
-                    {
-                        name: "cta_url",
-                        buttonParamsJson: JSON.stringify({
-                            display_text: "🔗 Open Image",
-                            url: result.url
-                        })
-                    }
-                ]
+            
+            // Create vCard for each image
+            const vcard = 'BEGIN:VCARD\n'
+                + 'VERSION:3.0\n'
+                + `FN:Image ${i + 1} - ${searchTerm}\n`
+                + `ORG:SILA-MD Image Search;\n`
+                + `TEL;type=CELL;type=VOICE;waid=255123456789:+255 123 456 789\n`
+                + 'END:VCARD';
+            
+            contacts.push({
+                displayName: `🖼️ Image ${i + 1}`,
+                vcard: vcard
             });
         }
 
-        if (cards.length === 0) {
-            return repondre(`┏━❑ 𝙸𝙼𝙰𝙶𝙴 𝚂𝙴𝙰𝚁𝙲𝙷 ━━━━━━━━━
-┃ ❌ *No valid images found!*
-┗━━━━━━━━━━━━━━━━━━━━
-> © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`);
-        }
-
-        // Send as interactive carousel
+        // Send images with contacts for scrolling
         await zk.sendMessage(dest, {
-            interactiveMessage: {
-                header: {
-                    title: `┏━❑ 𝙸𝙼𝙰𝙶𝙴 𝚂𝙴𝙰𝚁𝙲𝙷 𝚁𝙴𝚂𝚄𝙻𝚃𝚂 ━━━━━━━━━
-┃ 🖼️ *Found ${cards.length} images for:* ${searchTerm}
-┃ 👆 *Swipe left/right to view more*
-┗━━━━━━━━━━━━━━━━━━━━`,
-                    hasMediaAttachment: false
-                },
-                body: {
-                    text: `📱 *Use the buttons below each image*`
-                },
-                nativeFlowMessage: {
-                    buttons: [
-                        {
-                            name: "single_select",
-                            buttonParamsJson: JSON.stringify({
-                                title: "📱 More Options",
-                                sections: [
-                                    {
-                                        title: "Image Options",
-                                        rows: [
-                                            {
-                                                title: "Search New Image",
-                                                description: "Search for different images",
-                                                id: "new_search"
-                                            },
-                                            {
-                                                title: "View in Browser",
-                                                description: "Open all images in browser",
-                                                id: "browser_view"
-                                            }
-                                        ]
-                                    }
-                                ]
-                            })
-                        }
-                    ]
-                },
-                carouselMessage: {
-                    cards: cards
-                }
+            contacts: {
+                displayName: `${maxImages} Images Found`,
+                contacts: contacts
             }
         }, { quoted: fkontak });
 
-        // Optional: Send a follow-up message with search summary
-        setTimeout(async () => {
-            await zk.sendMessage(dest, {
-                text: `┏━❑ 𝙸𝙼𝙰𝙶𝙴 𝚂𝙴𝙰𝚁𝙲𝙷 𝙲𝙾𝙼𝙿𝙻𝙴𝚃𝙴 ━━━━━━━━━
-┃ ✅ *Found ${cards.length} images*
-┃ 🔍 *Search term:* ${searchTerm}
-┃ 👆 *Swipe left/right to view all images*
+        // Send a summary message
+        await zk.sendMessage(dest, {
+            text: `┏━❑ 𝙸𝙼𝙰𝙶𝙴 𝚂𝙴𝙰𝚁𝙲𝙷 𝚁𝙴𝚂𝚄𝙻𝚃𝚂 ━━━━━━━━━
+┃ ✅ *Found ${results.length} images for:* ${searchTerm}
+┃ 🖼️ *Displayed ${maxImages} images*
+┃ 👆 *Scroll through contacts to view images*
 ┗━━━━━━━━━━━━━━━━━━━━
 > © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`
-            }, { quoted: fkontak });
-        }, 1000);
+        }, { quoted: fkontak });
 
     } catch (error) {
         console.error("Image search error:", error);
@@ -187,10 +107,5 @@ sila({
 ┃ ${error.message}
 ┗━━━━━━━━━━━━━━━━━━━━
 > © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`);
-        
-        // Delete loading message if it exists
-        try {
-            await zk.deleteMessage(dest, loadingMsg.key);
-        } catch (e) {}
     }
 });
