@@ -16,7 +16,7 @@ const fkontak = {
     }
 };
 
-// ── Image search command with carousel ─────────────────────────────────
+// ── Image search command with carousel cards ─────────────────────────────────
 sila({
     nomCom: 'image2',
     alias: ['image2', 'images2', 'img', 'pic'],
@@ -25,23 +25,22 @@ sila({
     reaction: '🖼️',
     fromMe: 'false'
 }, async (dest, zk, commandeOptions) => {
-    const { repondre, ms, arg } = commandeOptions;
+    const { repondre, ms, arg, prefixe } = commandeOptions;
 
     if (!arg[0]) {
         return repondre(`┏━❑ 𝙸𝙼𝙰𝙶𝙴 𝚂𝙴𝙰𝚁𝙲𝙷 ━━━━━━━━━
 ┃ 🖼️ *Please provide an image name!*
-┃ 📝 *Example:* *${conf.prefix}image2 beautiful nature*
+┃ 📝 *Example:* *${prefixe}image2 beautiful nature*
 ┗━━━━━━━━━━━━━━━━━━━━
 > © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`);
     }
 
     const searchTerm = arg.join(" ");
+    const userName = dest.split('@')[0];
     
     // Send loading message
-    await zk.sendMessage(dest, {
-        text: `
-┃ ⏳ *sila is searching for:* ${searchTerm}
-`
+    const loadingMsg = await zk.sendMessage(dest, { 
+        text: `sila is searching for: ${searchTerm}` 
     }, { quoted: fkontak });
 
     try {
@@ -59,51 +58,67 @@ sila({
 > © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`);
         }
 
-        // Create carousel cards (maximum 10 images)
+        // Delete loading message
+        await zk.sendMessage(dest, { delete: loadingMsg.key });
+
+        // Create carousel cards for images
         const cards = [];
-        const maxImages = Math.min(results.length, 10);
+        const maxImages = Math.min(results.length, 10); // Maximum 10 images
 
         for (let i = 0; i < maxImages; i++) {
             const result = results[i];
             if (!result || !result.url) continue;
 
             // Get image dimensions
-            let dimensions = "Unknown";
-            if (result.width && result.height) {
-                dimensions = `${result.width} x ${result.height}`;
-            }
+            const dimensions = (result.width && result.height) 
+                ? `${result.width} x ${result.height}` 
+                : "Unknown";
 
+            // Create card for each image
             cards.push({
-                header: `🖼️ *Image ${i + 1}/${maxImages}*`,
                 body: {
-                    text: `┏━❑ 𝙸𝙼𝙰𝙶𝙴 𝙳𝙴𝚃𝙰𝙸𝙻𝚂 ━━━━━━━
+                    text: `┏━❑ 🖼️ 𝙸𝙼𝙰𝙶𝙴 ${i + 1}/${maxImages} ━━━━━━━━━
 ┃ 📌 *Search:* ${searchTerm}
 ┃ 📏 *Size:* ${dimensions}
 ┃ 🔗 *URL:* ${result.url}
 ┗━━━━━━━━━━━━━━━━━━━━`
                 },
-                media: {
+                footer: {
+                    text: "◀️ 𝚂𝚠𝚒𝚙𝚎 𝚏𝚘𝚛 𝚖𝚘𝚛𝚎 𝚒𝚖𝚊𝚐𝚎𝚜 ▶️"
+                },
+                header: {
+                    title: `🖼️ 𝙸𝙼𝙰𝙶𝙴 ${i + 1}`,
+                    hasMediaAttachment: true,
                     image: {
                         url: result.url
                     }
                 },
-                buttons: [
-                    {
-                        name: "cta_url",
-                        buttonParamsJson: JSON.stringify({
-                            display_text: "🔗 Open Image",
-                            url: result.url
-                        })
-                    },
-                    {
-                        name: "cta_copy",
-                        buttonParamsJson: JSON.stringify({
-                            display_text: "📋 Copy URL",
-                            id: "copy_url",
-                            copy_code: result.url
-                        })
-                    }
-                ]
+                nativeFlowMessage: {
+                    buttons: [
+                        {
+                            name: "cta_url",
+                            buttonParamsJson: JSON.stringify({
+                                display_text: "🔗 𝙾𝙿𝙴𝙽 𝙸𝙼𝙰𝙶𝙴",
+                                url: result.url
+                            })
+                        },
+                        {
+                            name: "cta_copy",
+                            buttonParamsJson: JSON.stringify({
+                                display_text: "📋 𝙲𝙾𝙿𝚈 𝚄𝚁𝙻",
+                                id: "copy_url",
+                                copy_code: result.url
+                            })
+                        },
+                        {
+                            name: "quick_reply",
+                            buttonParamsJson: JSON.stringify({
+                                display_text: "🔄 𝙽𝙴𝚆 𝚂𝙴𝙰𝚁𝙲𝙷",
+                                id: `${prefixe}image2`
+                            })
+                        }
+                    ]
+                }
             });
         }
 
@@ -114,59 +129,43 @@ sila({
 > © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`);
         }
 
-        // Send as interactive carousel message
-        await zk.sendMessage(dest, {
-            interactiveMessage: {
-                header: {
-                    title: `┏━❑ 𝙸𝙼𝙰𝙶𝙴 𝚂𝙴𝙰𝚁𝙲𝙷 𝚁𝙴𝚂𝚄𝙻𝚃𝚂 ━━━━━━━
-┃ 🖼️ *${cards.length} images found for:* ${searchTerm}
-┃ 👆 *Swipe left/right to view more*
-┗━━━━━━━━━━━━━━━━━━━━`,
-                    hasMediaAttachment: false
-                },
-                body: {
-                    text: `📱 *Use buttons below each image*`
-                },
-                nativeFlowMessage: {
-                    buttons: [
-                        {
-                            name: "single_select",
-                            buttonParamsJson: JSON.stringify({
-                                title: "📱 More Options",
-                                sections: [
-                                    {
-                                        title: "Image Options",
-                                        rows: [
-                                            {
-                                                title: "🔍 New Search",
-                                                description: "Search for different images",
-                                                id: `new_search_${Date.now()}`
-                                            },
-                                            {
-                                                title: "📋 Get All URLs",
-                                                description: "View all image URLs",
-                                                id: `get_urls_${Date.now()}`
-                                            }
-                                        ]
-                                    }
-                                ]
-                            })
-                        }
-                    ]
-                },
-                carouselMessage: {
-                    cards: cards
-                }
+        // Create interactive carousel message
+        const interactiveMessage = {
+            body: {
+                text: `┏━❑ 🖼️ 𝙸𝙼𝙰𝙶𝙴 𝚂𝙴𝙰𝚁𝙲𝙷 ━━━━━━━━━
+┃ 👋 Hello, *${userName}*!
+┃ 
+┃ 🔍 *Search term:* ${searchTerm}
+┃ 📊 *Found:* ${results.length} images
+┃ 🖼️ *Showing:* ${cards.length} images
+┃ 
+┃ 𝚂𝚠𝚒𝚙𝚎 𝚕𝚎𝚏𝚝/𝚛𝚒𝚐𝚑𝚝 𝚝𝚘 𝚟𝚒𝚎𝚠 𝚒𝚖𝚊𝚐𝚎𝚜
+┗━━━━━━━━━━━━━━━━━━━━`
+            },
+            footer: {
+                text: "◀️ 𝚂𝚕𝚒𝚍𝚎 𝚏𝚘𝚛 𝚖𝚘𝚛𝚎 𝚒𝚖𝚊𝚐𝚎𝚜 ▶️"
+            },
+            header: {
+                title: "🖼️ 𝚂𝙸𝙻𝙰-𝙼𝙳 𝙸𝙼𝙰𝙶𝙴 𝚂𝙴𝙰𝚁𝙲𝙷",
+                hasMediaAttachment: false
+            },
+            carouselMessage: {
+                cards: cards
             }
+        };
+
+        // Send the interactive carousel message
+        await zk.sendMessage(dest, {
+            interactiveMessage: interactiveMessage
         }, { quoted: fkontak });
 
-        // Send summary message after carousel
+        // Send completion message
         setTimeout(async () => {
             await zk.sendMessage(dest, {
                 text: `┏━❑ 𝙸𝙼𝙰𝙶𝙴 𝚂𝙴𝙰𝚁𝙲𝙷 𝙲𝙾𝙼𝙿𝙻𝙴𝚃𝙴 ━━━━━━━━━
-┃ ✅ *Found ${results.length} images total*
-┃ 🖼️ *Displayed ${cards.length} images in carousel*
-┃ 👆 *Swipe left/right to scroll through images*
+┃ ✅ Found *${results.length}* images total
+┃ 🖼️ Displayed *${cards.length}* images in carousel
+┃ 👆 Swipe left/right to scroll through images
 ┗━━━━━━━━━━━━━━━━━━━━
 > © 𝙿𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝙸𝙻𝙰-𝙼𝙳`
             }, { quoted: fkontak });
